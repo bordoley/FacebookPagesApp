@@ -1,0 +1,3 @@
+[submodule "RxApp"]
+	path = RxApp
+	url = https://github.com/bordoley/RxApp.git

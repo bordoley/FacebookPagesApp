@@ -1,7 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FacebookPagesApp", "FacebookPagesApp/FacebookPagesApp.csproj", "{0EF604D0-82AC-48B4-817B-4E1E550070E5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FacebookPagesApp", "FacebookPagesApp\FacebookPagesApp.csproj", "{0EF604D0-82AC-48B4-817B-4E1E550070E5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RxApp", "RxApp", "{44C07A99-B15A-4B1D-9785-3673879F11AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RxApp", "RxApp\RxApp\RxApp.csproj", "{CC5733DE-CD02-451A-8371-2F6067A5CE07}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RxApp.Android", "RxApp\RxApp.Android\RxApp.Android.csproj", "{C25BB5A4-5A21-4837-8F8F-B46673937F6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,5 +19,17 @@ Global
 		{0EF604D0-82AC-48B4-817B-4E1E550070E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EF604D0-82AC-48B4-817B-4E1E550070E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EF604D0-82AC-48B4-817B-4E1E550070E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C25BB5A4-5A21-4837-8F8F-B46673937F6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C25BB5A4-5A21-4837-8F8F-B46673937F6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C25BB5A4-5A21-4837-8F8F-B46673937F6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C25BB5A4-5A21-4837-8F8F-B46673937F6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC5733DE-CD02-451A-8371-2F6067A5CE07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC5733DE-CD02-451A-8371-2F6067A5CE07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC5733DE-CD02-451A-8371-2F6067A5CE07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC5733DE-CD02-451A-8371-2F6067A5CE07}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{CC5733DE-CD02-451A-8371-2F6067A5CE07} = {44C07A99-B15A-4B1D-9785-3673879F11AF}
+		{C25BB5A4-5A21-4837-8F8F-B46673937F6D} = {44C07A99-B15A-4B1D-9785-3673879F11AF}
 	EndGlobalSection
 EndGlobal

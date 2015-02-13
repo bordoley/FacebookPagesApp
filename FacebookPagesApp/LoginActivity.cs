@@ -12,6 +12,7 @@ using RxApp;
 
 namespace FacebookPagesApp
 {
+    [Activity(Label = "LoginActivity")]    
     public class LoginActivity : RxActivity<ILoginViewModel>
     {
         // This is very, very evil, but it works reliably and allows the rest of the code to pretend

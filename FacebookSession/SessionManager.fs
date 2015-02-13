@@ -8,6 +8,7 @@ open Android.Util
 open Android.Support.V4.Content
 open FSharp.Control.Reactive
 open Xamarin.Facebook
+open System.Threading
 
 type LoginResult = Successful | Failed
 
@@ -43,7 +44,6 @@ module FacebookSession =
         match Session.ActiveSession with 
         | null -> None
         | s -> Some s
-     
 
     type internal FacebookSessionManager(activityProvider: unit->Activity) =
         interface ISessionManager with
@@ -107,8 +107,22 @@ module FacebookSession =
             let dispose() = 
                 localBroadcastManager.UnregisterReceiver activeSessionSetReceiver
                 localBroadcastManager.UnregisterReceiver activeSessionClosedReceiver
+            
+            let bootstrap () =
+                if Session.ActiveSession = null then Session.ActiveSession <- createSession context
 
-            dispose
+                // The state of a session when the user was previously logged in
+                if Session.ActiveSession.State = SessionState.CreatedTokenLoaded then Session.ActiveSession.OpenForRead(null)
+
+            async {
+                // Cause the work to be scheduled on to the event loop
+                do! Async.SwitchToContext (SynchronizationContext.Current)
+                None |> observer.OnNext 
+
+                bootstrap ()
+            } |> Async.StartImmediate
+
+            dispose 
 
         Observable.create onSubscribe
 
@@ -132,15 +146,18 @@ module FacebookSession =
                     | None -> ()
 
                     match current with
-                    | Some session -> session.AddCallback(sessionStatusChangedCallback)
-                    | None -> ())
+                    | Some session -> 
+                        session.AddCallback(sessionStatusChangedCallback)
+                        publishState session
+                    | None -> 
+                        publishState null)
 
             let dispose () =
                 currentSessionSubscription.Dispose()
                 match activeSession () with
                 | Some session -> session.RemoveCallback sessionStatusChangedCallback
                 | _ -> ()
-
+                          
             dispose
 
         Observable.create onSubscribe

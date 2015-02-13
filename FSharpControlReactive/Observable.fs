@@ -404,7 +404,11 @@ module Observable =
 
     ///  Creates an observable sequence from a specified Subscribe method implementation.
     let create subscribe =
-        let subscribe observer = Action (subscribe observer)
+        // FIXME: WTF?
+        let subscribe observer = 
+            let action = 
+                subscribe observer
+            Action action
         Observable.Create(Func<IObserver<'Result>,Action> subscribe)
 
     /// Creates an observable sequence from a specified Subscribe method implementation.

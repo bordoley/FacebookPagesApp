@@ -40,7 +40,13 @@ namespace FacebookPagesApp
         public override void OnCreate()
         {
             base.OnCreate();
-            Insights.Initialize("Your API key", this.ApplicationContext);
+            AndroidEnvironment.UnhandledExceptionRaiser += (sender, args) =>
+                {
+                    var path = Context.GetExternalFilesDir("exceptions").Path;
+                    StreamWriter file = File.CreateText(path + "/exception.txt");
+                    file.Write(args.Exception.StackTrace); // save the exception description and clean stack trace
+                    file.Close();
+                };
         }
 
         public override void Start()
@@ -50,6 +56,7 @@ namespace FacebookPagesApp
                     this.NavigationStack,
                     FacebookSession.observe(this.ApplicationContext),
                     FacebookSession.getManagerWithFunc(() => LoginActivity.Current));
+            applicationController.Init();
         }
 
         public override void Stop()

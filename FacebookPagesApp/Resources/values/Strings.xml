@@ -1,5 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="hello">Hello World, Click Me!</string>
 	<string name="app_name">FacebookPagesApp</string>
+	<string name="login_with_facebook">Sign in with Facebook</string>
+	<string name="login_failed">Ooops...seems like we were unable to log you in. Please try again so that you can start making some new friends</string>
+	<string name="login_network_unavailable">Maybe you need to turn your phone off airplane mode or get on wifi, we can\'t connect to the internet.</string>
 </resources>

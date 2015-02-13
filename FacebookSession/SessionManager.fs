@@ -1,4 +1,4 @@
-﻿namespace FacebookSession
+﻿namespace FacebookPagesApp
 
 open System
 
@@ -147,6 +147,9 @@ module FacebookSession =
 
     let getManager (activityProvider:unit->Activity) =
         new FacebookSessionManager(activityProvider) :> ISessionManager
+
+    let getManagerWithFunc (activityProvider:Func<Activity>) =
+        getManager (fun () -> activityProvider.Invoke())
 
     let onActivityResultDelegate (activity:Activity) requestCode (resultCode:Result) data =
         let session = Session.ActiveSession

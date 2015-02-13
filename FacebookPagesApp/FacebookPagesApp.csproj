@@ -90,12 +90,18 @@
     <Reference Include="Splat">
       <HintPath>..\packages\Splat.1.6.1\lib\monoandroid\Splat.dll</HintPath>
     </Reference>
+    <Reference Include="Xamarin.Insights">
+      <HintPath>..\packages\Xamarin.Insights.1.9.0.106\lib\MonoAndroid10\Xamarin.Insights.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.3.1.2.1\lib\MonoAndroid\FSharp.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="FacebookPagesAppApplication.cs" />
+    <Compile Include="FacebookPagesApplication.cs" />
+    <Compile Include="LoginActivity.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -104,13 +110,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\layout\Main.axml" />
     <AndroidResource Include="Resources\values\Strings.xml" />
     <AndroidResource Include="Resources\drawable-hdpi\Icon.png" />
     <AndroidResource Include="Resources\drawable-mdpi\Icon.png" />
     <AndroidResource Include="Resources\drawable-xhdpi\Icon.png" />
     <AndroidResource Include="Resources\drawable-xxhdpi\Icon.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\Icon.png" />
+    <AndroidResource Include="Resources\values\styles.xml" />
+    <AndroidResource Include="Resources\layout\Login.axml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <Import Project="packages\SQLitePCL.raw.0.7.2-pre1\build\MonoAndroid\SQLitePCL.raw.targets" Condition="Exists('packages\SQLitePCL.raw.0.7.2-pre1\build\MonoAndroid\SQLitePCL.raw.targets')" />
@@ -131,5 +138,16 @@
       <Project>{71A9B271-CC7D-4EF0-82DB-23E0F3F88B6C}</Project>
       <Name>FSharpControlReactive</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FacebookPagesAppModels\FacebookPagesAppModels.csproj">
+      <Project>{0794E6A8-713D-4771-BCF2-101C7A381345}</Project>
+      <Name>FacebookPagesAppModels</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FacebookPagesAppCore\FacebookPagesAppCore.fsproj">
+      <Project>{B5E7AB38-54C6-4435-AA85-8D69857B27EB}</Project>
+      <Name>FacebookPagesAppCore</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\layout\" />
   </ItemGroup>
 </Project>

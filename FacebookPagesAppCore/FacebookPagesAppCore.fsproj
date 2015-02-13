@@ -6,7 +6,7 @@
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{F2A71F9B-5D33-465A-A702-920D77279786}</ProjectTypeGuids>
     <ProjectGuid>{B5E7AB38-54C6-4435-AA85-8D69857B27EB}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>FacebookPagesAppCore</RootNamespace>
+    <RootNamespace>FacebookPagesApp</RootNamespace>
     <MonoAndroidAssetsPrefix>Assets</MonoAndroidAssetsPrefix>
     <MonoAndroidResourcePrefix>Resources</MonoAndroidResourcePrefix>
     <AndroidResgenClass>Resource</AndroidResgenClass>
@@ -44,9 +44,54 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime" />
     <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core" />
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.3.1.2.1\lib\MonoAndroid\FSharp.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Android" />
+    <Reference Include="System.Reactive.Interfaces">
+      <HintPath>..\packages\Rx-Interfaces.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Core">
+      <HintPath>..\packages\Rx-Core.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq">
+      <HintPath>..\packages\Rx-Linq.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.PlatformServices">
+      <HintPath>..\packages\Rx-PlatformServices.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="ReactiveUI">
+      <HintPath>..\packages\reactiveui-core.6.4.0.1\lib\MonoAndroid\ReactiveUI.dll</HintPath>
+    </Reference>
+    <Reference Include="Splat">
+      <HintPath>..\packages\Splat.1.6.1\lib\monoandroid\Splat.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.FSharp.targets" />
+  <ItemGroup>
+    <Compile Include="FacebookPagesApplicationController.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RxApp\RxApp\RxApp.csproj">
+      <Project>{CC5733DE-CD02-451A-8371-2F6067A5CE07}</Project>
+      <Name>RxApp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FacebookPagesAppModels\FacebookPagesAppModels.csproj">
+      <Project>{0794E6A8-713D-4771-BCF2-101C7A381345}</Project>
+      <Name>FacebookPagesAppModels</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FacebookSession\FacebookSession.fsproj">
+      <Project>{BD895915-6231-454E-9B19-9826AA1F0A63}</Project>
+      <Name>FacebookSession</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FSharpControlReactive\FSharpControlReactive.fsproj">
+      <Project>{71A9B271-CC7D-4EF0-82DB-23E0F3F88B6C}</Project>
+      <Name>FSharpControlReactive</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
 </Project>

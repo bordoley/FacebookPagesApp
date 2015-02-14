@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">PagesApp</string>
+	<string name="app_name">FacebookPagesApp</string>
 	<string name="app_id">800229216714209</string>
 
 	<string name="login_with_facebook">Sign in with Facebook</string>

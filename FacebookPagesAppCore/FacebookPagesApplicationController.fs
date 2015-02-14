@@ -50,25 +50,26 @@ type FacebookPagesApplicationController(navStack:INavigationStack,
 
     let mutable subscription :IDisposable = null                                            
 
-    member this.Init () =
-        UnknownStateModel() |> navStack.SetRoot
+    interface IApplication with
+        member this.Init () =
+            UnknownStateModel() |> navStack.SetRoot
 
-        subscription <-
-            sessionState 
-            |> Observable.observeOnContext SynchronizationContext.Current
-            |> Observable.subscribe (fun state ->
-                match state with
-                | LoggedIn -> 
-                    ()
-                | LoggedOut -> 
-                    LoginModel() |> navStack.SetRoot)
-         
-    member this.Bind (model:obj) = 
-        match model with 
-        | :? ILoginControllerModel as vm -> Controllers.loginController vm sessionManager
-        | :? IUnknownStateControllerModel -> Disposable.Empty
-        | _ -> failwith ("Unknown controller model type: " + model.ToString())
+            subscription <-
+                sessionState 
+                |> Observable.observeOnContext SynchronizationContext.Current
+                |> Observable.subscribe (fun state ->
+                    match state with
+                    | LoggedIn -> 
+                        PagesModel() |> navStack.SetRoot
+                    | LoggedOut -> 
+                        LoginModel() |> navStack.SetRoot)
+             
+        member this.Bind (model:obj) = 
+            match model with 
+            | :? ILoginControllerModel as vm -> Controllers.loginController vm sessionManager
+            | :? IUnknownStateControllerModel -> Disposable.Empty
+            | :? IPagesControllerModel -> Disposable.Empty
+            | _ -> failwith ("Unknown controller model type: " + model.ToString())
 
-    interface IDisposable with
         member this.Dispose () = 
             subscription.Dispose ()

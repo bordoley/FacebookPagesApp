@@ -14,6 +14,8 @@ namespace FacebookPagesApp
 
         ICommand CreatePost { get; }
 
+        ICommand LogOut { get; }
+
         ICommand RefeshPosts { get; }
         bool RefreshingPosts { get; }
     }
@@ -25,6 +27,8 @@ namespace FacebookPagesApp
 
         IObservable<Unit> CreatePost { get; }
 
+        IObservable<Unit> LogOut { get; }
+
         IObservable<Unit> RefreshPosts { get; }
         bool RefreshingPosts { set; }
     }
@@ -34,6 +38,7 @@ namespace FacebookPagesApp
         private readonly ReactiveList<object> _pages = new ReactiveList<object>();
         private readonly ReactiveList<object> _posts = new ReactiveList<object>();
         private readonly IReactiveCommand<object> _createPost = ReactiveCommand.Create();
+        private readonly IReactiveCommand<object> _logOut = ReactiveCommand.Create();
         private readonly IReactiveCommand<object> _refreshPosts;
 
         private bool _refreshingPosts = false;
@@ -58,6 +63,11 @@ namespace FacebookPagesApp
         IObservable<Unit> IPagesControllerModel.CreatePost { get { return _createPost.Select(_ => Unit.Default); } }
 
 
+        ICommand IPagesViewModel.LogOut { get { return _logOut; } }
+
+        IObservable<Unit> IPagesControllerModel.LogOut { get { return _logOut.Select(_ => Unit.Default); } }
+
+
         ICommand IPagesViewModel.RefeshPosts { get { return _refreshPosts; } }
 
         IObservable<Unit> IPagesControllerModel.RefreshPosts { get { return _refreshPosts.Select(_ => Unit.Default); } }
@@ -66,6 +76,8 @@ namespace FacebookPagesApp
         bool IPagesViewModel.RefreshingPosts { get { return _refreshingPosts; } }
 
         bool IPagesControllerModel.RefreshingPosts { set { this.RaiseAndSetIfChanged(ref _refreshingPosts, value); } }
+
+
     }
 }
 

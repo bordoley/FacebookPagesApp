@@ -44,8 +44,11 @@ module Controllers =
 
         subscription :> IDisposable
 
-    let pagesController (vm:IPagesControllerModel) (navStack:INavigationStack) =
-        vm.CreatePost |> Observable.subscribe (fun _ -> navStack.Push (NewPostModel()))
+    let pagesController (vm:IPagesControllerModel) (navStack:INavigationStack) (sessionManager:ISessionManager) =
+        let retval = new CompositeDisposable()
+        retval.Add (vm.CreatePost |> Observable.subscribe (fun _ -> navStack.Push (NewPostModel())))
+        retval.Add (vm.LogOut |> Observable.subscribe(fun _ -> sessionManager.Logout |> Async.StartImmediate))
+        retval :> IDisposable
 
 type FacebookPagesApplicationController(navStack:INavigationStack,
                                         sessionState:IObservable<LoginState>,
@@ -71,7 +74,7 @@ type FacebookPagesApplicationController(navStack:INavigationStack,
             match model with 
             | :? ILoginControllerModel as vm -> Controllers.loginController vm sessionManager
             | :? IUnknownStateControllerModel as vm -> Disposable.Empty
-            | :? IPagesControllerModel as vm -> Controllers.pagesController vm navStack
+            | :? IPagesControllerModel as vm -> Controllers.pagesController vm navStack sessionManager
             | :? INewPostControllerModel as vm -> Disposable.Empty
             | _ -> failwith ("Unknown controller model type: " + model.ToString())
 

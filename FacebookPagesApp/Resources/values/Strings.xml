@@ -4,8 +4,9 @@
 	<string name="app_id">800229216714209</string>
 
 	<string name="login_with_facebook">Sign in with Facebook</string>
-	<string name="login_failed">Ooops...seems like we were unable to log you in. Please try again so that you can start making some new friends</string>
+	<string name="login_failed">Ooops...seems like we were unable to log you in.</string>
 	<string name="login_network_unavailable">Maybe you need to turn your phone off airplane mode or get on wifi, we can\'t connect to the internet.</string>
 
 	<string name="pages_action_bar_new_post">New Post</string>
+	<string name="pages_action_bar_logout">Log Out</string>
 </resources>

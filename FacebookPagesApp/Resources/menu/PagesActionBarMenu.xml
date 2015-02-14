@@ -4,4 +4,7 @@
     <item android:id="@+id/pages_action_bar_new_post"
           android:title="@string/pages_action_bar_new_post"
           android:showAsAction="ifRoom" />
+    <item android:id="@+id/pages_action_bar_logout"
+          android:title="@string/pages_action_bar_logout"
+          android:showAsAction="ifRoom" />
 </menu>

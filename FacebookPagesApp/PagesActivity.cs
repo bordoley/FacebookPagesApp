@@ -64,6 +64,9 @@ namespace FacebookPagesApp
                 case Resource.Id.pages_action_bar_new_post:
                     this.ViewModel.CreatePost.Execute(null);
                     break;
+                case Resource.Id.pages_action_bar_logout:
+                    this.ViewModel.LogOut.Execute(null);
+                    break;
             }
             return base.OnOptionsItemSelected(item);
         }

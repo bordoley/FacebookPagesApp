@@ -27,6 +27,7 @@ namespace FacebookPagesApp
                  if (model is ILoginViewModel       ) { return typeof(LoginActivity);        } 
             else if (model is IUnknownStateViewModel) { return typeof(UnknownStateActivity); } 
             else if (model is IPagesViewModel       ) { return typeof(PagesActivity);        } 
+            else if (model is INewPostViewModel     ) { return typeof(NewPostActivity);      }  
 
             throw new Exception("No view for view model");
         }

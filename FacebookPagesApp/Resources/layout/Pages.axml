@@ -21,4 +21,32 @@
             android:dividerHeight="10.0sp"
             android:longClickable="true" />
     </android.support.v4.widget.SwipeRefreshLayout>
+    <LinearLayout
+        android:layout_gravity="start"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="#FFFFFF">
+        <TextView
+            android:id="@+id/user_name"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textSize="20dp" />
+        <ImageView
+            android:id="@+id/user_profile_picture"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <ListView
+            android:id="@+id/user_pages"
+            android:layout_width="fill_parent"
+            android:padding="12dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:drawSelectorOnTop="true"
+            android:gravity="center"
+            android:fastScrollEnabled="true"
+            android:smoothScrollbar="true"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="10.0sp"
+            android:longClickable="true" />
+    </LinearLayout>
 </android.support.v4.widget.DrawerLayout>

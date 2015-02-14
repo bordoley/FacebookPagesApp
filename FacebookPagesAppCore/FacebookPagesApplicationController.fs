@@ -44,6 +44,9 @@ module Controllers =
 
         subscription :> IDisposable
 
+    let pagesController (vm:IPagesControllerModel) (navStack:INavigationStack) =
+        vm.CreatePost |> Observable.subscribe (fun _ -> navStack.Push (NewPostModel()))
+
 type FacebookPagesApplicationController(navStack:INavigationStack,
                                         sessionState:IObservable<LoginState>,
                                         sessionManager:ISessionManager) = 
@@ -67,8 +70,9 @@ type FacebookPagesApplicationController(navStack:INavigationStack,
         member this.Bind (model:obj) = 
             match model with 
             | :? ILoginControllerModel as vm -> Controllers.loginController vm sessionManager
-            | :? IUnknownStateControllerModel -> Disposable.Empty
-            | :? IPagesControllerModel -> Disposable.Empty
+            | :? IUnknownStateControllerModel as vm -> Disposable.Empty
+            | :? IPagesControllerModel as vm -> Controllers.pagesController vm navStack
+            | :? INewPostControllerModel as vm -> Disposable.Empty
             | _ -> failwith ("Unknown controller model type: " + model.ToString())
 
         member this.Dispose () = 

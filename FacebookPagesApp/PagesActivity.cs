@@ -12,8 +12,8 @@ using RxApp;
 
 namespace FacebookPagesApp
 {
-    [Activity()]    
-    public class PagesActivity : RxActivity<ILoginViewModel>
+    [Activity(Theme = "@android:style/Theme.Holo.Light")]    
+    public class PagesActivity : RxActivity<IPagesViewModel>
     {
         public PagesActivity()
         {
@@ -22,6 +22,7 @@ namespace FacebookPagesApp
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
+            this.SetContentView(Resource.Layout.Pages);
         }
 
         protected override void OnResume()
@@ -31,6 +32,7 @@ namespace FacebookPagesApp
 
         protected override void OnPause()
         {
+            base.OnPause();
         }
     }
 }

@@ -16,7 +16,7 @@ namespace FacebookPagesApp
     public sealed class FacebookPagesApplication : RxApplication
     {
         public const string XAMARIN_INSIGHTS_KEY = 
-            "483137a8b42bc65cd39f3b649599093a6e09ce46483137a8b42bc65cd39f3b649599093a6e09ce46";
+            "483137a8b42bc65cd39f3b649599093a6e09ce46";
 
         public FacebookPagesApplication(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {

@@ -31,13 +31,14 @@ module FacebookSession =
 
         override this.OnReceive(context:Context, intent:Intent) = cb ()
 
-    type private RequestCallback (cb) =    
+    type private RequestCallback (onSuccess, onError, onCancelled) =    
         inherit Java.Lang.Object ()
         interface Session.IStatusCallback with 
             member this.Call(session:Session, state:SessionState, ex:Java.Lang.Exception) = 
-                match state with 
-                | s when s.Equals(SessionState.Opened) -> cb(Successful)
-                | s when s.Equals(SessionState.ClosedLoginFailed) -> cb(Failed)
+                match (state, ex) with 
+                | (_, ex) when not (Object.ReferenceEquals(ex, null)) -> onError ex
+                | (s, _) when s.Equals(SessionState.Opened) -> onSuccess Successful
+                | (s, _) when s.Equals(SessionState.ClosedLoginFailed) -> onSuccess Failed
                 | _ -> Log.Info("FacebookSessionManager.RequestCallback", session.ToString()) |> ignore
                        Log.Info("FacebookSessionManager.RequestCallback", state.ToString()) |> ignore   
 
@@ -52,12 +53,13 @@ module FacebookSession =
                 with get () = Async.FromContinuations(
                                 fun (cont, econt, ccont) ->
                                     let session = Session.ActiveSession
-                                    let request = new Session.OpenRequest(activityProvider())
+                                    let activity = activityProvider()
+                                    let request = new Session.OpenRequest(activity)
                                     request.SetDefaultAudience(SessionDefaultAudience.OnlyMe)
                                            .SetLoginBehavior(SessionLoginBehavior.SsoWithFallback)
                                            //.SetPermissions(null)
-                                           .SetCallback(new RequestCallback(cont)) |> ignore
-                                    session.OpenForRead(request))
+                                           .SetCallback(new RequestCallback(cont, econt, ccont)) |> ignore
+                                    session.OpenForRead request)
                                 
             member this.Logout 
                 with get () = async {

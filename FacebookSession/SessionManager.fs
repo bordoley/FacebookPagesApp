@@ -22,6 +22,7 @@ type LoginState = LoggedIn | LoggedOut
 module FacebookSession =
     type private SessionStatusChangedCallback (cb) =    
         inherit Java.Lang.Object ()
+
         interface Session.IStatusCallback with 
             member this.Call(session:Session, state:SessionState, ex:Java.Lang.Exception) = cb session
 
@@ -65,19 +66,12 @@ module FacebookSession =
 
             member this.AccessToken 
                 with get() = 
-                    match activeSession () with
-                    | None -> None
-                    | Some x -> 
-                        match x.AccessToken with
+                    activeSession () |> Option.bind (fun session -> 
+                        match session.AccessToken with
                         | null -> None
-                        | at -> Some at
+                        | at -> Some at)
                        
     let private createSession context = (new Session.Builder(context)).SetApplicationId(Settings.ApplicationId).Build()
-
-    let private loginState () =
-        match Session.ActiveSession with
-        | null -> None
-        | s -> Some (if s.IsOpened then LoggedIn else LoggedOut)
 
     let private currentSession (context:Context) =
         let onSubscribe(observer:IObserver<Option<Session>>) =
@@ -109,16 +103,16 @@ module FacebookSession =
                 localBroadcastManager.UnregisterReceiver activeSessionClosedReceiver
             
             let bootstrap () =
-                if Session.ActiveSession = null then Session.ActiveSession <- createSession context
+                if Session.ActiveSession = null     
+                    then Session.ActiveSession <- createSession context
+                else observer.OnNext (Some Session.ActiveSession)
 
                 // The state of a session when the user was previously logged in
                 if Session.ActiveSession.State = SessionState.CreatedTokenLoaded then Session.ActiveSession.OpenForRead(null)
 
             async {
                 // Cause the work to be scheduled on to the event loop
-                do! Async.SwitchToContext (SynchronizationContext.Current)
-                None |> observer.OnNext 
-
+                do! Async.SwitchToContext SynchronizationContext.Current
                 bootstrap ()
             } |> Async.StartImmediate
 
@@ -126,13 +120,10 @@ module FacebookSession =
 
         Observable.create onSubscribe
 
-    let observe (context:Context) : IObservable<Option<LoginState>> =
-        let onSubscribe(observer:IObserver<Option<LoginState>>) =
+    let observe (context:Context) : IObservable<LoginState> =
+        let onSubscribe(observer:IObserver<LoginState>) =
             let publishState (session:Session) =
-                let state =
-                    match session with
-                    | null -> None
-                    | s -> Some (if s.IsOpened then LoggedIn else LoggedOut)
+                let state = if session.IsOpened then LoggedIn else LoggedOut
                 observer.OnNext state
 
             let sessionStatusChangedCallback = new SessionStatusChangedCallback(publishState) :> Session.IStatusCallback
@@ -149,8 +140,7 @@ module FacebookSession =
                     | Some session -> 
                         session.AddCallback(sessionStatusChangedCallback)
                         publishState session
-                    | None -> 
-                        publishState null)
+                    | None -> ())
 
             let dispose () =
                 currentSessionSubscription.Dispose()

@@ -62,6 +62,7 @@
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <ItemGroup>
     <Compile Include="LoginModel.cs" />
+    <Compile Include="UnknownStateModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

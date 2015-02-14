@@ -24,10 +24,8 @@ namespace FacebookPagesApp
 
         public override Type GetActivityType(object model)
         {
-            if (model is ILoginViewModel)
-            {
-                return typeof(LoginActivity);
-            } 
+            if (model is ILoginViewModel) { return typeof(LoginActivity); } 
+            else if (model is IUnknownStateViewModel) { return typeof(UnknownStateActivity); } 
 
             throw new Exception("No view for view model");
         }

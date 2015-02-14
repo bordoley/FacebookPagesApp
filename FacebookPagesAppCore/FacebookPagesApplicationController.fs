@@ -4,6 +4,7 @@ open System.Collections.Generic
 open System.Reactive.Disposables
 open RxApp
 open FSharp.Control.Reactive
+open System.Threading
 
 module Controllers =
     let loginController (vm: ILoginControllerModel) (sessionManager:ISessionManager) =
@@ -41,26 +42,31 @@ module Controllers =
             |> Observable.subscribe (fun _ -> doLogin () |> Async.StartImmediate)
         )
 
-        subscription
+        subscription :> IDisposable
 
 type FacebookPagesApplicationController(navStack:INavigationStack,
-                                        sessionState:IObservable<Option<LoginState>>,
+                                        sessionState:IObservable<LoginState>,
                                         sessionManager:ISessionManager) = 
 
     let mutable subscription :IDisposable = null                                            
 
     member this.Init () =
+        UnknownStateModel() |> navStack.SetRoot
+
         subscription <-
             sessionState 
+            |> Observable.observeOnContext SynchronizationContext.Current
             |> Observable.subscribe (fun state ->
                 match state with
-                | Some LoggedIn -> ()
-                | Some LoggedOut -> LoginModel() |> navStack.SetRoot
-                | _ -> ())
-
+                | LoggedIn -> 
+                    ()
+                | LoggedOut -> 
+                    LoginModel() |> navStack.SetRoot)
+         
     member this.Bind (model:obj) = 
         match model with 
         | :? ILoginControllerModel as vm -> Controllers.loginController vm sessionManager
+        | :? IUnknownStateControllerModel -> Disposable.Empty
         | _ -> failwith ("Unknown controller model type: " + model.ToString())
 
     interface IDisposable with

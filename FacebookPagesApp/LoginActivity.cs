@@ -42,7 +42,7 @@ namespace FacebookPagesApp
         {
             base.OnResume();
 
-            _current = this;
+            LoginActivity._current = this;
 
             var subscription = new CompositeDisposable();
 
@@ -81,7 +81,7 @@ namespace FacebookPagesApp
         {
             subscription.Dispose();
 
-            _current = null;
+            LoginActivity._current = null;
 
             base.OnPause();
         }

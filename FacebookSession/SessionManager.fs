@@ -31,14 +31,13 @@ module FacebookSession =
 
         override this.OnReceive(context:Context, intent:Intent) = cb ()
 
-    type private RequestCallback (onSuccess, onError, onCancelled) =    
+    type private RequestCallback (cont) =    
         inherit Java.Lang.Object ()
         interface Session.IStatusCallback with 
             member this.Call(session:Session, state:SessionState, ex:Java.Lang.Exception) = 
                 match (state, ex) with 
-                | (_, ex) when not (Object.ReferenceEquals(ex, null)) -> onError ex
-                | (s, _) when s.Equals(SessionState.Opened) -> onSuccess Successful
-                | (s, _) when s.Equals(SessionState.ClosedLoginFailed) -> onSuccess Failed
+                | (s, _) when s.Equals(SessionState.Opened) -> cont Successful
+                | (s, _) when s.Equals(SessionState.ClosedLoginFailed) -> cont Failed
                 | _ -> Log.Info("FacebookSessionManager.RequestCallback", session.ToString()) |> ignore
                        Log.Info("FacebookSessionManager.RequestCallback", state.ToString()) |> ignore   
 
@@ -58,7 +57,7 @@ module FacebookSession =
                                     request.SetDefaultAudience(SessionDefaultAudience.OnlyMe)
                                            .SetLoginBehavior(SessionLoginBehavior.SsoWithFallback)
                                            //.SetPermissions(null)
-                                           .SetCallback(new RequestCallback(cont, econt, ccont)) |> ignore
+                                           .SetCallback(new RequestCallback(cont)) |> ignore
                                     session.OpenForRead request)
                                 
             member this.Logout 
@@ -134,15 +133,17 @@ module FacebookSession =
                 (currentSession context) 
                 |> Observable.scanInit (None, None) (fun (_,prev) current -> (prev, current))
                 |> Observable.subscribe (fun (prev, current) -> 
-                    match prev with
-                    | Some session -> session.RemoveCallback sessionStatusChangedCallback
-                    | None -> ()
-
-                    match current with
-                    | Some session -> 
+                    match (prev, current) with
+                    | (None, Some session) -> 
                         session.AddCallback(sessionStatusChangedCallback)
                         publishState session
-                    | None -> ())
+                    | (Some prev, None) ->
+                        prev.RemoveCallback sessionStatusChangedCallback
+                    | (Some prev, Some current) -> 
+                        prev.RemoveCallback sessionStatusChangedCallback
+                        current.AddCallback(sessionStatusChangedCallback)
+                        publishState current
+                    | _  -> ())
 
             let dispose () =
                 currentSessionSubscription.Dispose()
@@ -152,7 +153,7 @@ module FacebookSession =
                           
             dispose
 
-        Observable.create onSubscribe
+        Observable.create onSubscribe |> Observable.distinctUntilChanged
 
     let getManager (activityProvider:unit->Activity) =
         new FacebookSessionManager(activityProvider) :> ISessionManager

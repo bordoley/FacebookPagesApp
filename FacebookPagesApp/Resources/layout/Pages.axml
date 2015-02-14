@@ -3,8 +3,22 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical" />
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/refresher"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ListView
+            android:id="@android:id/list"
+            android:layout_width="fill_parent"
+            android:padding="12dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:drawSelectorOnTop="true"
+            android:gravity="center"
+            android:fastScrollEnabled="true"
+            android:smoothScrollbar="true"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="10.0sp"
+            android:longClickable="true" />
+    </android.support.v4.widget.SwipeRefreshLayout>
 </android.support.v4.widget.DrawerLayout>

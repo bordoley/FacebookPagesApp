@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 
 using BetterPickers.CalendarDatePickers;
 using BetterPickers.RadialTimePickers;
+using Android.Text;
 
 namespace FacebookPagesApp
 {
@@ -80,6 +81,7 @@ namespace FacebookPagesApp
         private Switch shouldPublishPost;
         private Button showDatePicker;
         private Button showTimePicker;
+        private EditText postContent;
 
         protected override void OnCreate(Bundle bundle)
         {
@@ -90,6 +92,7 @@ namespace FacebookPagesApp
             shouldPublishPost = this.FindViewById<Switch>(Resource.Id.publish_post);
             showDatePicker = this.FindViewById<Button>(Resource.Id.post_choose_date);
             showTimePicker = this.FindViewById<Button>(Resource.Id.post_choose_time);
+            postContent = this.FindViewById<EditText>(Resource.Id.post_content);
 
             ActionBar.SetDisplayHomeAsUpEnabled(true);
             ActionBar.SetHomeButtonEnabled (true);
@@ -136,7 +139,7 @@ namespace FacebookPagesApp
             subscription.Add(
                 // FIxME: format the date pretty
                 this.WhenAnyValue(x => x.ViewModel.PublishTime).Select(x => x.ToString()).Subscribe(x => this.showTimePicker.Text = x));
-
+                
             this.subscription = subscription;
         }
 
@@ -151,6 +154,8 @@ namespace FacebookPagesApp
             switch (item.ItemId)
             {
                 case Resource.Id.new_post_action_bar_post:
+                    // late bind the text to avoid lots of strings copies
+                    this.ViewModel.PostContent = postContent.Text;
                     this.ViewModel.PublishPost.Execute(null);
                     break;
             }

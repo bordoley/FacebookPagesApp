@@ -12,6 +12,7 @@ namespace FacebookPagesApp
         bool ShouldPublishPost { set; }
         DateTime PublishDate { get; set; }
         TimeSpan PublishTime { get; set; }
+        string PostContent { set; }
 
         ICommand PublishPost { get; }
     }
@@ -21,6 +22,7 @@ namespace FacebookPagesApp
         bool ShouldPublishPost { get; }
         DateTime PublishDate { get; }
         TimeSpan PublishTime { get; }
+        string PostContent { get; }
 
         IObservable<Unit> PublishPost { get; }
     }
@@ -30,6 +32,7 @@ namespace FacebookPagesApp
         private bool _shouldPublishPost = true;
         private DateTime _publishDate = DateTime.Now;
         private TimeSpan _publishTime;
+        private string _postContent = "";
 
         private readonly IReactiveCommand<object> _publishPost = ReactiveCommand.Create();
 
@@ -54,6 +57,12 @@ namespace FacebookPagesApp
         {
             get { return _publishTime; }
             set { this.RaiseAndSetIfChanged(ref _publishTime, value); }
+        }
+
+        public string PostContent
+        {
+            get { return _postContent; }
+            set { this.RaiseAndSetIfChanged(ref _postContent, value); }
         }
 
 

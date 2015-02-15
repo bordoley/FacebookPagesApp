@@ -51,7 +51,16 @@ module ApplicationController =
         retval :> IDisposable
 
     let private newPostController (vm:INewPostControllerModel) (navStack:INavigationStack) =
-        Disposable.Empty
+        vm.PublishPost 
+        |> Observable.map (fun _ -> 
+            DateTime(
+                vm.PublishDate.Year, 
+                vm.PublishDate.Month, 
+                vm.PublishDate.Day, 
+                vm.PublishTime.Hours, 
+                vm.PublishTime.Minutes, 
+                vm.PublishTime.Seconds)) 
+        |> Observable.subscribe(fun _ -> ())
 
     let create (navStack:INavigationStack) (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) = 
         let subscription : IDisposable ref= ref null                                           

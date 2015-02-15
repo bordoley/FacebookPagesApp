@@ -38,7 +38,7 @@
         android:layout_width="fill_parent"
         android:background="@android:color/background_dark" />
     <EditText
-        android:id="@+id/text"
+        android:id="@+id/post_content"
         android:gravity="top"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"

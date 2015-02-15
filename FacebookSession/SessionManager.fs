@@ -15,7 +15,7 @@ type LoginResult = Successful | Failed
 type ISessionManager = 
     abstract Login: Async<LoginResult> with get
     abstract Logout: Async<unit> with get
-    abstract AccessToken:Option<string> with get
+    abstract AccessToken:string with get
 
 type LoginState = LoggedIn | LoggedOut
 
@@ -67,10 +67,16 @@ module FacebookSession =
 
             member this.AccessToken 
                 with get() = 
-                    activeSession () |> Option.bind (fun session -> 
+                    // Fixme: Why is this not a library function reall...wtf!!!
+                    let getOrElse b a =
+                        match a with
+                        | Some x -> x
+                        | None -> b
+
+                    activeSession () |> Option.map (fun session -> 
                         match session.AccessToken with
-                        | null -> None
-                        | at -> Some at)
+                        | null -> ""
+                        | at -> at) |> getOrElse ""
                        
     let private createSession context = (new Session.Builder(context)).SetApplicationId(Settings.ApplicationId).Build()
 

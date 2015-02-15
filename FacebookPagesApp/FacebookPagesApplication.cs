@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using RxApp;
 using Android.App;
 using Android.Runtime;
-using Microsoft.FSharp.Core;
+using ModernHttpClient; 
 
 using Xamarin;
 
@@ -34,10 +35,15 @@ namespace FacebookPagesApp
 
         public override IApplication ProvideApplication()
         {
+            var httpClient = new HttpClient(new NativeMessageHandler());
+            // FIXME: doing this here is causing all types of assmbly issues I don't want to deal with so fuck it.
+            //var functionalClient = FunctionalHttp.Client.HttpClient.FromNetHttpClient(httpClient);
+
             return ApplicationController.create(
                 this.NavigationStack,
                 FacebookSession.observe(this.ApplicationContext),
-                FacebookSession.getManagerWithFunc(() => LoginActivity.Current));
+                FacebookSession.getManagerWithFunc(() => LoginActivity.Current),
+                httpClient);
         }
 
         public override void OnCreate()

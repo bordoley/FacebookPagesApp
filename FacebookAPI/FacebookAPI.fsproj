@@ -59,10 +59,17 @@
     <Reference Include="FunctionalHttp.CSharpInterop">
       <HintPath>..\packages\FunctionalHttp.0.0.1-pre1\lib\monoandroid\FunctionalHttp.CSharpInterop.dll</HintPath>
     </Reference>
+    <Reference Include="Splat">
+      <HintPath>..\packages\Splat.1.6.1\lib\monoandroid\Splat.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.FSharp.targets" />
   <ItemGroup>
-    <Compile Include="Pages.fs" />
+    <Compile Include="FacebookObjects.fs" />
+    <Compile Include="FacebookClient.fs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

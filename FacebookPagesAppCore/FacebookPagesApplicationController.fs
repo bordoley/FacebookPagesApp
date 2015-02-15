@@ -1,10 +1,16 @@
 ﻿namespace FacebookPagesApp
 open System
+open System.IO
 open System.Collections.Generic
 open System.Reactive.Disposables
 open RxApp
 open FSharp.Control.Reactive
 open System.Threading
+open FunctionalHttp.Core
+open FunctionalHttp.Client
+open FacebookAPI
+
+type HttpClient<'TReq, 'TResp> = HttpRequest<'TReq> -> Async<HttpResponse<'TResp>>
 
 module ApplicationController =
     let private loginController (vm: ILoginControllerModel) (sessionManager:ISessionManager) =
@@ -44,10 +50,33 @@ module ApplicationController =
 
         subscription :> IDisposable
 
-    let private pagesController (vm:IPagesControllerModel) (navStack:INavigationStack) (sessionManager:ISessionManager) =
+    let private pagesController (vm:IPagesControllerModel) (navStack:INavigationStack) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream,Stream>) =
+        let facebookClient = FacebookClient(httpClient, fun () -> sessionManager.AccessToken)
+
+        async {
+            // FIXME: Ideally we cache the image in SQLite and check if its available before making the http request. Also need 
+            // some retry logic here.
+            let! profilePhoto = facebookClient.ProfilePhoto
+            match profilePhoto with
+            | Choice1Of2 bitmap -> 
+                vm.ProfilePhoto <- bitmap
+            | _ ->()
+        } |> Async.StartImmediate
+
+        async {
+            // FIXME: Ideally we cache the image in SQLite and check if its available before making the http request. Also need 
+            // some retry logic here.
+            let! userInfo = facebookClient.UserInfo
+            match userInfo with
+            | Choice1Of2 userInfo -> 
+                vm.UserName <- userInfo.firstName 
+            | _ ->()
+        } |> Async.StartImmediate
+
         let retval = new CompositeDisposable()
         retval.Add (vm.CreatePost |> Observable.subscribe (fun _ -> navStack.Push (NewPostModel())))
         retval.Add (vm.LogOut |> Observable.subscribe(fun _ -> sessionManager.Logout |> Async.StartImmediate))
+
         retval :> IDisposable
 
     let private newPostController (vm:INewPostControllerModel) (navStack:INavigationStack) =
@@ -62,8 +91,11 @@ module ApplicationController =
                 vm.PublishTime.Seconds)) 
         |> Observable.subscribe(fun _ -> ())
 
-    let create (navStack:INavigationStack) (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) = 
-        let subscription : IDisposable ref= ref null                                           
+    // FIXME: Ideally I want this to be a PCL and to have a FunctionalHTtpClient passed in, but I'm getting all kinds of assembly issues in FunctionalPagesAppCore with 
+    // F# types so fuck it.
+    let create (navStack:INavigationStack) (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) (httpClient:System.Net.Http.HttpClient) = 
+        let subscription : IDisposable ref= ref null    
+        let httpClient = HttpClient.fromNetHttpClient httpClient                                      
 
         { new IApplication with
             member this.Init () =
@@ -83,7 +115,7 @@ module ApplicationController =
                 match model with 
                 | :? ILoginControllerModel as vm -> loginController vm sessionManager
                 | :? IUnknownStateControllerModel as vm -> Disposable.Empty
-                | :? IPagesControllerModel as vm -> pagesController vm navStack sessionManager
+                | :? IPagesControllerModel as vm -> pagesController vm navStack sessionManager httpClient
                 | :? INewPostControllerModel as vm -> newPostController vm navStack
                 | _ -> failwith ("Unknown controller model type: " + model.ToString())
 

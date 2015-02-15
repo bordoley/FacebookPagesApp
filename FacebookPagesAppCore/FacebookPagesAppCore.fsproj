@@ -46,9 +46,6 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime" />
     <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.3.1.2.1\lib\MonoAndroid\FSharp.Core.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Android" />
     <Reference Include="System.Reactive.Interfaces">
       <HintPath>..\packages\Rx-Interfaces.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Interfaces.dll</HintPath>
@@ -68,6 +65,20 @@
     <Reference Include="Splat">
       <HintPath>..\packages\Splat.1.6.1\lib\monoandroid\Splat.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.3.1.2.1\lib\MonoAndroid\FSharp.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Sparse">
+      <HintPath>..\packages\Sparse.0.0.3\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Sparse.dll</HintPath>
+    </Reference>
+    <Reference Include="FunctionalHttp">
+      <HintPath>..\packages\FunctionalHttp.0.0.1-pre1\lib\monoandroid\FunctionalHttp.dll</HintPath>
+    </Reference>
+    <Reference Include="FunctionalHttp.CSharpInterop">
+      <HintPath>..\packages\FunctionalHttp.0.0.1-pre1\lib\monoandroid\FunctionalHttp.CSharpInterop.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.FSharp.targets" />
   <ItemGroup>
@@ -89,6 +100,10 @@
     <ProjectReference Include="..\FSharpControlReactive\FSharpControlReactive.fsproj">
       <Project>{71A9B271-CC7D-4EF0-82DB-23E0F3F88B6C}</Project>
       <Name>FSharpControlReactive</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FacebookAPI\FacebookAPI.fsproj">
+      <Project>{56788434-5447-4299-B0B9-2161406E3EEE}</Project>
+      <Name>FacebookAPI</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

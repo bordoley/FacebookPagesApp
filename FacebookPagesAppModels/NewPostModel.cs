@@ -12,6 +12,8 @@ namespace FacebookPagesApp
         bool ShouldPublishPost { set; }
         DateTime PublishDate { get; set; }
         TimeSpan PublishTime { get; set; }
+
+        ICommand PublishPost { get; }
     }
 
     public interface INewPostControllerModel : INavigableControllerModel, IServiceControllerModel
@@ -19,6 +21,8 @@ namespace FacebookPagesApp
         bool ShouldPublishPost { get; }
         DateTime PublishDate { get; }
         TimeSpan PublishTime { get; }
+
+        IObservable<Unit> PublishPost { get; }
     }
 
     public class NewPostModel : MobileModel, INewPostViewModel, INewPostControllerModel
@@ -26,6 +30,8 @@ namespace FacebookPagesApp
         private bool _shouldPublishPost = true;
         private DateTime _publishDate = DateTime.Now;
         private TimeSpan _publishTime;
+
+        private readonly IReactiveCommand<object> _publishPost = ReactiveCommand.Create();
 
         public NewPostModel()
         {
@@ -49,6 +55,11 @@ namespace FacebookPagesApp
             get { return _publishTime; }
             set { this.RaiseAndSetIfChanged(ref _publishTime, value); }
         }
+
+
+        ICommand INewPostViewModel.PublishPost { get { return _publishPost; } }
+
+        IObservable<Unit> INewPostControllerModel.PublishPost { get { return _publishPost.Select(_ => Unit.Default); } }
     }
 }
 

@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <!-- Search, should appear as action button -->
+    <item android:id="@+id/new_post_action_bar_post"
+          android:title="@string/new_post_action_bar_post"
+          android:showAsAction="ifRoom"
+          android:icon="@drawable/ic_action_content_send" />
+</menu>
+

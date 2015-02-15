@@ -16,4 +16,8 @@
 	<string name="publish_post">Publish Post</string>
 
 	<string name="scheduled_publish_time">Pick the publish date and time:</string>
+
+	<string name="new_post_action_bar_post">Publish post</string>
+
+	<string name="compose_post">Compose post</string>
 </resources>

@@ -110,13 +110,13 @@ namespace FacebookPagesApp
 
             subscription.Add(
                 Observable.FromEventPattern(showDatePicker, "Click")
-                          .SelectMany(_ => CalendarHelpers.PickDate(this.SupportFragmentManager, this.ViewModel.PublishDate))
-                          // For some reason the CB is getting scheduled on the thread pool.
-                          .ObserveOn(ReactiveUI.RxApp.MainThreadScheduler) 
-                          .Subscribe(date =>
-                    {
-                        this.ViewModel.PublishDate = date;
-                    }));
+                    .SelectMany(_ => CalendarHelpers.PickDate(this.SupportFragmentManager, this.ViewModel.PublishDate))
+                    // For some reason the CB is getting scheduled on the thread pool.
+                    .ObserveOn(ReactiveUI.RxApp.MainThreadScheduler) 
+                    .Subscribe(date =>
+                        {
+                            this.ViewModel.PublishDate = date;
+                        }));
 
             subscription.Add(
                 // FIxME: format the date pretty
@@ -125,19 +125,36 @@ namespace FacebookPagesApp
 
             subscription.Add(
                 Observable.FromEventPattern(showTimePicker, "Click")
-                .SelectMany(_ => CalendarHelpers.PickTime(this.SupportFragmentManager, this.ViewModel.PublishTime))
-                // For some reason the CB is getting scheduled on the thread pool.
-                .ObserveOn(ReactiveUI.RxApp.MainThreadScheduler) 
-                .Subscribe(time =>
-                    {
-                        this.ViewModel.PublishTime = time;
-                    }));
+                    .SelectMany(_ => CalendarHelpers.PickTime(this.SupportFragmentManager, this.ViewModel.PublishTime))
+                    // For some reason the CB is getting scheduled on the thread pool.
+                    .ObserveOn(ReactiveUI.RxApp.MainThreadScheduler) 
+                    .Subscribe(time =>
+                        {
+                            this.ViewModel.PublishTime = time;
+                        }));
 
             subscription.Add(
                 // FIxME: format the date pretty
                 this.WhenAnyValue(x => x.ViewModel.PublishTime).Select(x => x.ToString()).Subscribe(x => this.showTimePicker.Text = x));
 
             this.subscription = subscription;
+        }
+
+        public override bool OnCreateOptionsMenu (IMenu menu)
+        {
+            MenuInflater.Inflate (Resource.Menu.NewPostActionBarMenu, menu);       
+            return base.OnCreateOptionsMenu(menu);
+        }
+
+        public override bool OnOptionsItemSelected(IMenuItem item)
+        {
+            switch (item.ItemId)
+            {
+                case Resource.Id.new_post_action_bar_post:
+                    this.ViewModel.PublishPost.Execute(null);
+                    break;
+            }
+            return base.OnOptionsItemSelected(item);
         }
             
         protected override void OnPause()

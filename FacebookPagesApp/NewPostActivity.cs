@@ -50,7 +50,7 @@ namespace FacebookPagesApp
 
         private sealed class OnTimeSetListener : Java.Lang.Object, RadialTimePickerDialog.IOnTimeSetListener
         {
-            private TaskCompletionSource<TimeSpan> tcs = new TaskCompletionSource<DateTime>();
+            private TaskCompletionSource<TimeSpan> tcs = new TaskCompletionSource<TimeSpan>();
 
             public void OnTimeSet(RadialTimePickerDialog picker, int hourOfDay, int minute)
             {
@@ -66,12 +66,11 @@ namespace FacebookPagesApp
         {
             var cb = new OnTimeSetListener();
 
-            var timePickerDialog = RadialTimePickerDialog.NewInstance(cb, ts.Hours, ts.Minutes);
+            var timePickerDialog = RadialTimePickerDialog.NewInstance(cb, ts.Hours, ts.Minutes, false);
             timePickerDialog.Show(fm, FRAG_TAG_TIME_PICKER);
 
             return cb.Task;
         }
-
     }
 
     [Activity(Label = "NewPostActivity")]			

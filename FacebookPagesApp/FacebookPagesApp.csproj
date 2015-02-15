@@ -127,6 +127,15 @@
     <AndroidResource Include="Resources\layout\Pages.axml" />
     <AndroidResource Include="Resources\menu\PagesActionBarMenu.xml" />
     <AndroidResource Include="Resources\layout\NewPost.axml" />
+    <AndroidResource Include="Resources\drawable-hdpi\ic_action_content_send.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\ic_action_content_send.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\ic_action_content_send.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\ic_action_content_send.png" />
+    <AndroidResource Include="Resources\drawable-hdpi\ic_action_content_add_circle.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\ic_action_content_add_circle.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\ic_action_content_add_circle.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\ic_action_content_add_circle.png" />
+    <AndroidResource Include="Resources\drawable\drawer_shadow_light.9.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <Import Project="packages\SQLitePCL.raw.0.7.2-pre1\build\MonoAndroid\SQLitePCL.raw.targets" Condition="Exists('packages\SQLitePCL.raw.0.7.2-pre1\build\MonoAndroid\SQLitePCL.raw.targets')" />
@@ -159,6 +168,7 @@
   <ItemGroup>
     <Folder Include="Resources\layout\" />
     <Folder Include="Resources\menu\" />
+    <Folder Include="Resources\drawable\" />
   </ItemGroup>
   <ItemGroup>
     <XamarinComponentReference Include="betterpickers">

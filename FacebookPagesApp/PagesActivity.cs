@@ -16,7 +16,7 @@ using System.Reactive.Linq;
 
 namespace FacebookPagesApp
 {
-    [Activity(Theme = "@android:style/Theme.Material.Light")]    
+    [Activity(Label="Page")]    
     public class PagesActivity : RxActivity<IPagesViewModel>
     {
         private IDisposable subscription = null;
@@ -41,6 +41,9 @@ namespace FacebookPagesApp
             userName = FindViewById<TextView>(Resource.Id.user_name);
             profilePicture = this.FindViewById<ImageView>(Resource.Id.user_profile_picture);
             showUnpublishedPosts = this.FindViewById<Switch>(Resource.Id.show_unpublished);
+
+            var drawerLayout = this.FindViewById<DrawerLayout> (Resource.Id.drawer_layout);
+            drawerLayout.SetDrawerShadow (Resource.Drawable.drawer_shadow_light, (int)GravityFlags.Start);
         }
 
         protected override void OnResume()

@@ -4,15 +4,12 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:minWidth="25px"
-    android:minHeight="25px">
+    android:padding="12dp">
     <Switch
         android:id="@+id/publish_post"
         android:text="@string/publish_post"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="12dp"
-        android:layout_marginRight="12dp" />
+        android:layout_height="wrap_content" />
     <TextView
         android:text="@string/scheduled_publish_time"
         android:layout_width="fill_parent"
@@ -22,18 +19,41 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp">
         <Button
             android:id="@+id/post_choose_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp" />
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
         <Button
             android:id="@+id/post_choose_time"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+    <Space
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <EditText
+            android:id="@+id/text"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="fill_parent"
+            android:singleLine="false"
+            android:text="The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog." />
+        <ImageButton
+            android:id="@+id/post"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="12dp" />
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_action_content_send" />
     </LinearLayout>
 </LinearLayout>

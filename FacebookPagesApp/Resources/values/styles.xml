@@ -1,6 +1,16 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
 <resources>
+
+	<style name="AppTheme" parent="android:Theme.Material.Light.DarkActionBar">
+	  <item name="android:colorPrimary">#3498DB</item>
+	  <item name="android:colorPrimaryDark">#3498DB</item>
+	  <item name="android:colorAccent">#B455B6</item>
+	  <item name="android:windowContentTransitions">true</item>
+	</style>
+
+	<color name="white_primary">#d6ffffff</color>
     <color name="background_color">#FF69B4FF</color>
+
     <style name="SplashTheme" parent="@android:style/Theme.Light">
         <item name="android:windowBackground">@color/background_color</item>
         <item name="android:windowNoTitle">true</item>

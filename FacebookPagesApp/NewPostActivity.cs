@@ -90,6 +90,9 @@ namespace FacebookPagesApp
             shouldPublishPost = this.FindViewById<Switch>(Resource.Id.publish_post);
             showDatePicker = this.FindViewById<Button>(Resource.Id.post_choose_date);
             showTimePicker = this.FindViewById<Button>(Resource.Id.post_choose_time);
+
+            ActionBar.SetDisplayHomeAsUpEnabled(true);
+            ActionBar.SetHomeButtonEnabled (true);
         }
 
         protected override void OnResume()
@@ -136,7 +139,7 @@ namespace FacebookPagesApp
 
             this.subscription = subscription;
         }
-
+            
         protected override void OnPause()
         {
             subscription.Dispose();

@@ -56,9 +56,13 @@ module FacebookSession =
                                     let request = new Session.OpenRequest(activity)
                                     request.SetDefaultAudience(SessionDefaultAudience.OnlyMe)
                                            .SetLoginBehavior(SessionLoginBehavior.SsoWithFallback)
-                                           //.SetPermissions(null)
+
+                                           // FIXME: Make this a parameter to the constructor
+                                           .SetPermissions([|"manage_pages"|])
                                            .SetCallback(new RequestCallback(cont)) |> ignore
-                                    session.OpenForRead request)
+
+                                    // FIXME: Might need to call read first and then continue with a request for publish. Need to test.
+                                    session.OpenForPublish request)
                                 
             member this.Logout 
                 with get () = async {

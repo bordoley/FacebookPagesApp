@@ -74,5 +74,9 @@
       <Project>{CC5733DE-CD02-451A-8371-2F6067A5CE07}</Project>
       <Name>RxApp</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FacebookAPI\FacebookAPI.fsproj">
+      <Project>{56788434-5447-4299-B0B9-2161406E3EEE}</Project>
+      <Name>FacebookAPI</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

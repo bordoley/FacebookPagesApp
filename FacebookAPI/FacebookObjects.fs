@@ -3,5 +3,11 @@ open System
 
 
 type UserInfo = {
-    firstName:string
+        firstName:string
+    }
+
+type Page = {
+        id:string
+        accessToken:string
+        name:string
     }

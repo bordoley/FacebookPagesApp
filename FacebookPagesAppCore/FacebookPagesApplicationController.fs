@@ -73,6 +73,17 @@ module ApplicationController =
             | _ ->()
         } |> Async.StartImmediate
 
+        async {
+            // FIXME: Ideally we cache the image in SQLite and check if its available before making the http request. Also need 
+            // some retry logic here.
+            let! pages = facebookClient.ListPages
+            match pages with
+            | Choice1Of2 pages -> 
+                vm.Pages.AddRange pages
+            | _ ->()
+        } |> Async.StartImmediate
+      
+
         let retval = new CompositeDisposable()
         retval.Add (vm.CreatePost |> Observable.subscribe (fun _ -> navStack.Push (NewPostModel())))
         retval.Add (vm.LogOut |> Observable.subscribe(fun _ -> sessionManager.Logout |> Async.StartImmediate))

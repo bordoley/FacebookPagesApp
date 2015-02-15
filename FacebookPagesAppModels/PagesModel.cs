@@ -14,7 +14,7 @@ namespace FacebookPagesApp
         IBitmap ProfilePhoto { get; }
         bool ShowUnpublishedPosts { set; }
 
-        IReadOnlyReactiveList<object> Pages { get; }
+        IReadOnlyReactiveList<FacebookAPI.Page> Pages { get; }
         IReadOnlyReactiveList<object> Posts { get; }
 
         ICommand CreatePost { get; }
@@ -32,7 +32,7 @@ namespace FacebookPagesApp
 
         bool ShowUnpublishedPosts { get; }
 
-        IReactiveList<object> Pages { get; }
+        IReactiveList<FacebookAPI.Page> Pages { get; }
         IReactiveList<object> Posts { get; }
 
         IObservable<Unit> CreatePost { get; }
@@ -45,7 +45,7 @@ namespace FacebookPagesApp
 
     public class PagesModel : MobileModel, IPagesViewModel, IPagesControllerModel
     {
-        private readonly ReactiveList<object> _pages = new ReactiveList<object>();
+        private readonly ReactiveList<FacebookAPI.Page> _pages = new ReactiveList<FacebookAPI.Page>();
         private readonly ReactiveList<object> _posts = new ReactiveList<object>();
         private readonly IReactiveCommand<object> _createPost = ReactiveCommand.Create();
         private readonly IReactiveCommand<object> _logOut = ReactiveCommand.Create();
@@ -81,9 +81,9 @@ namespace FacebookPagesApp
         IBitmap IPagesControllerModel.ProfilePhoto { set { this.RaiseAndSetIfChanged(ref _profilePhoto, value); } }
 
 
-        IReadOnlyReactiveList<object> IPagesViewModel.Pages { get { return _pages; } }
+        IReadOnlyReactiveList<FacebookAPI.Page> IPagesViewModel.Pages { get { return _pages; } }
 
-        IReactiveList<object> IPagesControllerModel.Pages { get { return _pages; } }
+        IReactiveList<FacebookAPI.Page> IPagesControllerModel.Pages { get { return _pages; } }
 
 
         IReadOnlyReactiveList<object> IPagesViewModel.Posts { get { return _posts; } }

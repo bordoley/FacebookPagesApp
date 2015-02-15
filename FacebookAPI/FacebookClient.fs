@@ -35,8 +35,32 @@ module internal FacebookConverters =
         return (contentInfo, { firstName = firstName })
     }
 
+    let streamToPages (contentInfo:ContentInfo, stream:Stream) = async {
+        let callingContext = SynchronizationContext.Current
+        do! Async.SwitchToThreadPool ()
+
+        use stream = stream
+        use sr = new StreamReader(stream)
+        let o = JToken.ReadFrom(new JsonTextReader(sr))
+       
+        let result =
+            o.["data"].Children() 
+            |> Seq.map(fun o ->
+                let id = string o.["id"]
+                let accessToken = string o.["accessToken"]
+                let name = string o.["name"]
+
+                { id = id; accessToken = accessToken; name = name })
+            |> List.ofSeq
+               
+        do! Async.SwitchToContext callingContext
+
+        return (contentInfo, result)
+    }
+
 [<Sealed>]
 type FacebookClient (httpClient:HttpClient<Stream,Stream>, tokenProvider:unit->string) =
+    let pagesClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, FacebookConverters.streamToPages)
     let profileClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, SplatConverters.streamToIBitmap) 
     let userInfoClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, FacebookConverters.streamToUser)
 
@@ -44,16 +68,14 @@ type FacebookClient (httpClient:HttpClient<Stream,Stream>, tokenProvider:unit->s
         let authorizationCredentials = Challenge.OAuthToken <| tokenProvider()
         req |> HttpRequest.withAuthorization authorizationCredentials
 
-    member this.ListPages () =
+    member this.ListPages = async {
         let request = 
             let uri = new System.Uri("https://graph.facebook.com/v2.0/me/accounts")
-            let authorizationCredentials = Challenge.OAuthToken <| tokenProvider()
-            HttpRequest<Stream>.Create(Method.Get, uri, Stream.Null, authorization = authorizationCredentials)
+            HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
 
-        async {
-            let! response = request |> httpClient
-            return response.Entity
-        }
+        let! response = request |> pagesClient
+        return response.Entity
+    }
 
     member this.CreatePost post = ()
 

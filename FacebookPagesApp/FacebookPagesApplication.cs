@@ -44,6 +44,15 @@ namespace FacebookPagesApp
         {
             base.OnCreate();
             Insights.Initialize(XAMARIN_INSIGHTS_KEY, this.ApplicationContext);
+
+            /* Code for getting the key hash for facebook
+            foreach (var sig in this.PackageManager.GetPackageInfo(this.PackageName, Android.Content.PM.PackageInfoFlags.Signatures).Signatures)
+            {
+                var md = Java.Security.MessageDigest.GetInstance("SHA");
+                md.Update(sig.ToByteArray());
+                var key = System.Text.Encoding.UTF8.GetString(Android.Util.Base64.Encode(md.Digest(), 0));
+                Android.Util.Log.Error("Key Hash=", key);
+            }*/
         }
     }
 }

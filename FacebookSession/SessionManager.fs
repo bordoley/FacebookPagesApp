@@ -90,8 +90,9 @@ module FacebookSession =
                 new SessionBroadcastReceiver(fun () ->
                     Session.ActiveSession <- createSession context)
 
-            let activeSessionSetReceiver = new SessionBroadcastReceiver(fun () -> 
-               activeSession () |> observer.OnNext)  
+            let activeSessionSetReceiver = 
+                new SessionBroadcastReceiver(fun () -> 
+                    activeSession () |> observer.OnNext)  
  
             let localBroadcastManager = 
                 let instance = LocalBroadcastManager.GetInstance context

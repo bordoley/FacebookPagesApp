@@ -108,9 +108,6 @@
     <Compile Include="UnknownStateActivity.cs" />
     <Compile Include="PagesActivity.cs" />
     <Compile Include="NewPostActivity.cs" />
-    <Compile Include="NewPostModel.cs">
-      <DependentUpon>FacebookPagesApplication.cs</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />

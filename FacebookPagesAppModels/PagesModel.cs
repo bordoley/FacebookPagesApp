@@ -4,11 +4,15 @@ using System.Reactive.Linq;
 using System.Windows.Input;
 using ReactiveUI;
 using RxApp;
+using Splat;
 
 namespace FacebookPagesApp
 {
     public interface IPagesViewModel : INavigableViewModel, IServiceViewModel
     {
+        string UserName { get; }
+        IBitmap ProfilePhoto { get; }
+
         IReadOnlyReactiveList<object> Pages { get; }
         IReadOnlyReactiveList<object> Posts { get; }
 
@@ -22,6 +26,9 @@ namespace FacebookPagesApp
 
     public interface IPagesControllerModel : INavigableControllerModel, IServiceControllerModel
     {
+        string UserName { set; }
+        IBitmap ProfilePhoto { set; }
+
         IReactiveList<object> Pages { get; }
         IReactiveList<object> Posts { get; }
 
@@ -42,11 +49,23 @@ namespace FacebookPagesApp
         private readonly IReactiveCommand<object> _refreshPosts;
 
         private bool _refreshingPosts = false;
+        private string _userName = "";
+        private IBitmap _profilePhoto = null;
 
         public PagesModel()
         {
             _refreshPosts = this.WhenAnyValue(x => ((IPagesViewModel) x).RefreshingPosts).Select(x => !x).ToCommand();
         }
+
+        string IPagesViewModel.UserName { get { return _userName; } }
+
+        string IPagesControllerModel.UserName { set { this.RaiseAndSetIfChanged(ref _userName, value); } }
+
+
+        IBitmap IPagesViewModel.ProfilePhoto { get { return _profilePhoto; } }
+
+        IBitmap IPagesControllerModel.ProfilePhoto { set { this.RaiseAndSetIfChanged(ref _profilePhoto, value); } }
+
 
         IReadOnlyReactiveList<object> IPagesViewModel.Pages { get { return _pages; } }
 
@@ -76,8 +95,6 @@ namespace FacebookPagesApp
         bool IPagesViewModel.RefreshingPosts { get { return _refreshingPosts; } }
 
         bool IPagesControllerModel.RefreshingPosts { set { this.RaiseAndSetIfChanged(ref _refreshingPosts, value); } }
-
-
     }
 }
 

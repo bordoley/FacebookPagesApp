@@ -26,6 +26,13 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:background="#FFFFFF">
+        <Button
+            android:id="@+id/log_out"
+            android:text="@string/log_out"
+            android:layout_width="fill_parent"
+            android:layout_height="50sp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp" />
         <TextView
             android:id="@+id/user_name"
             android:layout_width="fill_parent"

@@ -9,18 +9,22 @@ using Android.Support.V4.Widget;
 
 using ReactiveUI;
 using RxApp;
+using Splat;
 
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 
 namespace FacebookPagesApp
 {
-    [Activity(Theme = "@android:style/Theme.Holo.Light")]    
+    [Activity(Theme = "@android:style/Theme.Material.Light")]    
     public class PagesActivity : RxActivity<IPagesViewModel>
     {
+        private IDisposable subscription = null;
 
         private SwipeRefreshLayout refresher;
-        private IDisposable subscription = null;
+        private Button logoutButton;
+        private TextView userName;
+        private ImageView profilePicture;
 
         public PagesActivity()
         {
@@ -32,6 +36,9 @@ namespace FacebookPagesApp
             this.SetContentView(Resource.Layout.Pages);
 
             refresher = FindViewById<SwipeRefreshLayout>(Resource.Id.refresher);
+            logoutButton = FindViewById<Button>(Resource.Id.log_out);
+            userName = FindViewById<TextView>(Resource.Id.user_name);
+            profilePicture = this.FindViewById<ImageView>(Resource.Id.user_profile_picture);
         }
 
         protected override void OnResume()
@@ -47,6 +54,19 @@ namespace FacebookPagesApp
             subscription.Add(
                 this.WhenAnyValue(x => x.ViewModel.RefreshingPosts).Where(x => !x).Subscribe(_ => 
                     refresher.Refreshing = false));
+
+            subscription.Add(
+                this.BindCommand(this.ViewModel, vm => vm.LogOut, view => view.logoutButton));
+
+            subscription.Add(
+                this.WhenAnyValue(x => x.ViewModel.UserName).Subscribe(x => this.userName.Text = x));
+
+            subscription.Add(
+                this.WhenAnyValue(x => x.ViewModel.ProfilePhoto).Subscribe(bitmap =>
+                    {
+                        profilePicture.SetMinimumHeight((int)bitmap.Height);
+                        profilePicture.SetImageDrawable (bitmap.ToNative());
+                    }));
                 
             this.subscription = subscription;
         }
@@ -63,9 +83,6 @@ namespace FacebookPagesApp
             {
                 case Resource.Id.pages_action_bar_new_post:
                     this.ViewModel.CreatePost.Execute(null);
-                    break;
-                case Resource.Id.pages_action_bar_logout:
-                    this.ViewModel.LogOut.Execute(null);
                     break;
             }
             return base.OnOptionsItemSelected(item);

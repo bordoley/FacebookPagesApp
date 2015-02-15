@@ -29,6 +29,7 @@ namespace FacebookPagesApp
 
         public NewPostModel()
         {
+            _publishTime = new TimeSpan(_publishDate.Hour, _publishDate.Minute, 0);
         }
 
         public bool ShouldPublishPost

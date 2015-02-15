@@ -14,4 +14,6 @@
 
 	<string name="show_unpublished">Show Unpublished</string>
 	<string name="publish_post">Publish Post</string>
+
+	<string name="scheduled_publish_time">Pick the publish date and time:</string>
 </resources>

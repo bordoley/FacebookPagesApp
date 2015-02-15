@@ -61,7 +61,6 @@ namespace FacebookPagesApp
             public Task<TimeSpan> Task { get { return tcs.Task; } }
         }
 
-
         public static Task<TimeSpan> PickTime(Android.Support.V4.App.FragmentManager fm, TimeSpan ts)
         {
             var cb = new OnTimeSetListener();
@@ -105,6 +104,7 @@ namespace FacebookPagesApp
                         this.ViewModel.ShouldPublishPost = x;
                     }));
 
+
             subscription.Add(
                 Observable.FromEventPattern(showDatePicker, "Click")
                           .SelectMany(_ => CalendarHelpers.PickDate(this.SupportFragmentManager, this.ViewModel.PublishDate))
@@ -118,6 +118,21 @@ namespace FacebookPagesApp
             subscription.Add(
                 // FIxME: format the date pretty
                 this.WhenAnyValue(x => x.ViewModel.PublishDate).Select(x => x.ToString()).Subscribe(x => this.showDatePicker.Text = x));
+
+
+            subscription.Add(
+                Observable.FromEventPattern(showTimePicker, "Click")
+                .SelectMany(_ => CalendarHelpers.PickTime(this.SupportFragmentManager, this.ViewModel.PublishTime))
+                // For some reason the CB is getting scheduled on the thread pool.
+                .ObserveOn(ReactiveUI.RxApp.MainThreadScheduler) 
+                .Subscribe(time =>
+                    {
+                        this.ViewModel.PublishTime = time;
+                    }));
+
+            subscription.Add(
+                // FIxME: format the date pretty
+                this.WhenAnyValue(x => x.ViewModel.PublishTime).Select(x => x.ToString()).Subscribe(x => this.showTimePicker.Text = x));
 
             this.subscription = subscription;
         }

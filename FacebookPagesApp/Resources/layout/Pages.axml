@@ -22,6 +22,7 @@
             android:longClickable="true" />
     </android.support.v4.widget.SwipeRefreshLayout>
     <LinearLayout
+        android:orientation="vertical"
         android:layout_gravity="start"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
@@ -30,9 +31,16 @@
             android:id="@+id/log_out"
             android:text="@string/log_out"
             android:layout_width="fill_parent"
-            android:layout_height="50sp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp" />
+        <Switch
+            android:id="@+id/show_unpublished"
+            android:text="@string/show_unpublished"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp" />
         <TextView
             android:id="@+id/user_name"
             android:layout_width="fill_parent"

@@ -25,6 +25,7 @@ namespace FacebookPagesApp
         private Button logoutButton;
         private TextView userName;
         private ImageView profilePicture;
+        private Switch showUnpublishedPosts;
 
         public PagesActivity()
         {
@@ -39,6 +40,7 @@ namespace FacebookPagesApp
             logoutButton = FindViewById<Button>(Resource.Id.log_out);
             userName = FindViewById<TextView>(Resource.Id.user_name);
             profilePicture = this.FindViewById<ImageView>(Resource.Id.user_profile_picture);
+            showUnpublishedPosts = this.FindViewById<Switch>(Resource.Id.show_unpublished);
         }
 
         protected override void OnResume()
@@ -62,12 +64,18 @@ namespace FacebookPagesApp
                 this.WhenAnyValue(x => x.ViewModel.UserName).Subscribe(x => this.userName.Text = x));
 
             subscription.Add(
-                this.WhenAnyValue(x => x.ViewModel.ProfilePhoto).Subscribe(bitmap =>
+                this.WhenAnyValue(x => x.ViewModel.ProfilePhoto).Where(x => x != null).Subscribe(bitmap =>
                     {
                         profilePicture.SetMinimumHeight((int)bitmap.Height);
                         profilePicture.SetImageDrawable (bitmap.ToNative());
                     }));
-                
+
+            subscription.Add(
+                Observable.FromEventPattern<CompoundButton.CheckedChangeEventArgs>(showUnpublishedPosts, "CheckedChange").Select(x => x.EventArgs.IsChecked).Subscribe(x =>
+                    {
+                        this.ViewModel.ShowUnpublishedPosts = x;
+                    }));
+     
             this.subscription = subscription;
         }
 

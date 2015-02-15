@@ -12,6 +12,7 @@ namespace FacebookPagesApp
     {
         string UserName { get; }
         IBitmap ProfilePhoto { get; }
+        bool ShowUnpublishedPosts { set; }
 
         IReadOnlyReactiveList<object> Pages { get; }
         IReadOnlyReactiveList<object> Posts { get; }
@@ -28,6 +29,8 @@ namespace FacebookPagesApp
     {
         string UserName { set; }
         IBitmap ProfilePhoto { set; }
+
+        bool ShowUnpublishedPosts { get; }
 
         IReactiveList<object> Pages { get; }
         IReactiveList<object> Posts { get; }
@@ -49,6 +52,7 @@ namespace FacebookPagesApp
         private readonly IReactiveCommand<object> _refreshPosts;
 
         private bool _refreshingPosts = false;
+        private bool _showUnpublishedPosts = false;
         private string _userName = "";
         private IBitmap _profilePhoto = null;
 
@@ -56,6 +60,16 @@ namespace FacebookPagesApp
         {
             _refreshPosts = this.WhenAnyValue(x => ((IPagesViewModel) x).RefreshingPosts).Select(x => !x).ToCommand();
         }
+            
+        bool IPagesViewModel.RefreshingPosts { get { return _refreshingPosts; } }
+
+        bool IPagesControllerModel.RefreshingPosts { set { this.RaiseAndSetIfChanged(ref _refreshingPosts, value); } }
+
+
+        bool IPagesViewModel.ShowUnpublishedPosts { set { this.RaiseAndSetIfChanged(ref _showUnpublishedPosts, value); } }
+
+        bool IPagesControllerModel.ShowUnpublishedPosts { get { return _showUnpublishedPosts; } }
+
 
         string IPagesViewModel.UserName { get { return _userName; } }
 
@@ -90,11 +104,6 @@ namespace FacebookPagesApp
         ICommand IPagesViewModel.RefeshPosts { get { return _refreshPosts; } }
 
         IObservable<Unit> IPagesControllerModel.RefreshPosts { get { return _refreshPosts.Select(_ => Unit.Default); } }
-
-
-        bool IPagesViewModel.RefreshingPosts { get { return _refreshingPosts; } }
-
-        bool IPagesControllerModel.RefreshingPosts { set { this.RaiseAndSetIfChanged(ref _refreshingPosts, value); } }
     }
 }
 

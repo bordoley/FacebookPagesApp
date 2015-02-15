@@ -11,4 +11,7 @@
 	<string name="pages_action_bar_logout">Log Out</string>
 
 	<string name="log_out">Logout</string>
+
+	<string name="show_unpublished">Show Unpublished</string>
+	<string name="publish_post">Publish Post</string>
 </resources>

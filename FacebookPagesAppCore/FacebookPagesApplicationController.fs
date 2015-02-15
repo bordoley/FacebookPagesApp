@@ -6,8 +6,8 @@ open RxApp
 open FSharp.Control.Reactive
 open System.Threading
 
-module Controllers =
-    let loginController (vm: ILoginControllerModel) (sessionManager:ISessionManager) =
+module ApplicationController =
+    let private loginController (vm: ILoginControllerModel) (sessionManager:ISessionManager) =
         let canLogin : bool ref = ref true
 
         let setCanLogin value =
@@ -44,39 +44,40 @@ module Controllers =
 
         subscription :> IDisposable
 
-    let pagesController (vm:IPagesControllerModel) (navStack:INavigationStack) (sessionManager:ISessionManager) =
+    let private pagesController (vm:IPagesControllerModel) (navStack:INavigationStack) (sessionManager:ISessionManager) =
         let retval = new CompositeDisposable()
         retval.Add (vm.CreatePost |> Observable.subscribe (fun _ -> navStack.Push (NewPostModel())))
         retval.Add (vm.LogOut |> Observable.subscribe(fun _ -> sessionManager.Logout |> Async.StartImmediate))
         retval :> IDisposable
 
-type FacebookPagesApplicationController(navStack:INavigationStack,
-                                        sessionState:IObservable<LoginState>,
-                                        sessionManager:ISessionManager) = 
+    let private newPostController (vm:INewPostControllerModel) (navStack:INavigationStack) =
+        Disposable.Empty
 
-    let mutable subscription :IDisposable = null                                            
+    let create (navStack:INavigationStack) (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) = 
+        let subscription : IDisposable ref= ref null                                           
 
-    interface IApplication with
-        member this.Init () =
-            UnknownStateModel() |> navStack.SetRoot
+        { new IApplication with
+            member this.Init () =
+                UnknownStateModel() |> navStack.SetRoot
 
-            subscription <-
-                sessionState 
-                |> Observable.observeOnContext SynchronizationContext.Current
-                |> Observable.subscribe (fun state ->
-                    match state with
-                    | LoggedIn -> 
-                        PagesModel() |> navStack.SetRoot
-                    | LoggedOut -> 
-                        LoginModel() |> navStack.SetRoot)
-             
-        member this.Bind (model:obj) = 
-            match model with 
-            | :? ILoginControllerModel as vm -> Controllers.loginController vm sessionManager
-            | :? IUnknownStateControllerModel as vm -> Disposable.Empty
-            | :? IPagesControllerModel as vm -> Controllers.pagesController vm navStack sessionManager
-            | :? INewPostControllerModel as vm -> Disposable.Empty
-            | _ -> failwith ("Unknown controller model type: " + model.ToString())
+                subscription :=
+                    sessionState 
+                    |> Observable.observeOnContext SynchronizationContext.Current
+                    |> Observable.subscribe (fun state ->
+                        match state with
+                        | LoggedIn -> 
+                            PagesModel() |> navStack.SetRoot
+                        | LoggedOut -> 
+                            LoginModel() |> navStack.SetRoot)
+                 
+            member this.Bind (model:obj) = 
+                match model with 
+                | :? ILoginControllerModel as vm -> loginController vm sessionManager
+                | :? IUnknownStateControllerModel as vm -> Disposable.Empty
+                | :? IPagesControllerModel as vm -> pagesController vm navStack sessionManager
+                | :? INewPostControllerModel as vm -> newPostController vm navStack
+                | _ -> failwith ("Unknown controller model type: " + model.ToString())
 
-        member this.Dispose () = 
-            subscription.Dispose ()
+            member this.Dispose () = 
+                (!subscription).Dispose ()
+        }

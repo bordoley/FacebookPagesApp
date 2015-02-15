@@ -34,7 +34,7 @@ namespace FacebookPagesApp
 
         public override IApplication ProvideApplication()
         {
-            return new FacebookPagesApplicationController(
+            return ApplicationController.create(
                 this.NavigationStack,
                 FacebookSession.observe(this.ApplicationContext),
                 FacebookSession.getManagerWithFunc(() => LoginActivity.Current));

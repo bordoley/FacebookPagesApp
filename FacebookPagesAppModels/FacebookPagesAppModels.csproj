@@ -58,6 +58,7 @@
     <Reference Include="ReactiveUI">
       <HintPath>..\packages\reactiveui-core.6.4.0.1\lib\MonoAndroid\ReactiveUI.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.Core" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <ItemGroup>

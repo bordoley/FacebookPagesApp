@@ -16,12 +16,13 @@ using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 
-using BetterPickers.CalendarDatePickers;
-using BetterPickers.RadialTimePickers;
+//using BetterPickers.CalendarDatePickers;
+//using BetterPickers.RadialTimePickers;
 using Android.Text;
 
 namespace FacebookPagesApp
 {
+/*
     public static class CalendarHelpers
     {
         private const string FRAG_TAG_DATE_PICKER = "fragment_date_picker_name";
@@ -71,7 +72,7 @@ namespace FacebookPagesApp
 
             return cb.Task;
         }
-    }
+    }*/
 
     [Activity(Label = "NewPostActivity")]			
     public class NewPostActivity : RxActivity<INewPostViewModel>
@@ -113,7 +114,8 @@ namespace FacebookPagesApp
 
             subscription.Add(
                 Observable.FromEventPattern(showDatePicker, "Click")
-                    .SelectMany(_ => CalendarHelpers.PickDate(this.SupportFragmentManager, this.ViewModel.PublishDate))
+                    .SelectMany(_ => Task.FromResult(DateTime.Now))
+                    //.SelectMany(_ => CalendarHelpers.PickDate(this.SupportFragmentManager, this.ViewModel.PublishDate))
                     // For some reason the CB is getting scheduled on the thread pool.
                     .ObserveOn(ReactiveUI.RxApp.MainThreadScheduler) 
                     .Subscribe(date =>
@@ -128,7 +130,7 @@ namespace FacebookPagesApp
 
             subscription.Add(
                 Observable.FromEventPattern(showTimePicker, "Click")
-                    .SelectMany(_ => CalendarHelpers.PickTime(this.SupportFragmentManager, this.ViewModel.PublishTime))
+                    .SelectMany(_ => Task.FromResult(new TimeSpan())) //CalendarHelpers.PickTime(this.SupportFragmentManager, this.ViewModel.PublishTime))
                     // For some reason the CB is getting scheduled on the thread pool.
                     .ObserveOn(ReactiveUI.RxApp.MainThreadScheduler) 
                     .Subscribe(time =>

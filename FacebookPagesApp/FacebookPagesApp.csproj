@@ -93,9 +93,6 @@
     <Reference Include="Xamarin.Insights">
       <HintPath>..\packages\Xamarin.Insights.1.9.0.106\lib\MonoAndroid10\Xamarin.Insights.dll</HintPath>
     </Reference>
-    <Reference Include="BetterPickers">
-      <HintPath>..\Components\betterpickers-1.5.2.1\lib\android\BetterPickers.dll</HintPath>
-    </Reference>
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net" />
     <Reference Include="FSharp.Core">
@@ -166,6 +163,10 @@
     <ProjectReference Include="..\FacebookPagesAppCore\FacebookPagesAppCore.fsproj">
       <Project>{B5E7AB38-54C6-4435-AA85-8D69857B27EB}</Project>
       <Name>FacebookPagesAppCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FacebookAPI\FacebookAPI.fsproj">
+      <Project>{56788434-5447-4299-B0B9-2161406E3EEE}</Project>
+      <Name>FacebookAPI</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

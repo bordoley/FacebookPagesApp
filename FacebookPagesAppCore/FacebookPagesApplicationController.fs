@@ -80,6 +80,9 @@ module ApplicationController =
             match pages with
             | Choice1Of2 pages -> 
                 vm.Pages.AddRange pages
+                match pages with 
+                | head :: _ -> vm.CurrentPage <- Some head
+                | _ -> ()
             | _ ->()
         } |> Async.StartImmediate
       
@@ -87,6 +90,7 @@ module ApplicationController =
         let retval = new CompositeDisposable()
         retval.Add (vm.CreatePost |> Observable.subscribe (fun _ -> navStack.Push (NewPostModel())))
         retval.Add (vm.LogOut |> Observable.subscribe(fun _ -> sessionManager.Logout |> Async.StartImmediate))
+        //retval.Add (vm.LoadPage |> 
 
         retval :> IDisposable
 

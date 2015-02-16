@@ -26,6 +26,7 @@ namespace FacebookPagesApp
         private TextView userName;
         private ImageView profilePicture;
         private Switch showUnpublishedPosts;
+        private ListView userpages;
 
         public PagesActivity()
         {
@@ -41,6 +42,18 @@ namespace FacebookPagesApp
             userName = FindViewById<TextView>(Resource.Id.user_name);
             profilePicture = this.FindViewById<ImageView>(Resource.Id.user_profile_picture);
             showUnpublishedPosts = this.FindViewById<Switch>(Resource.Id.show_unpublished);
+
+            userpages = this.FindViewById<ListView>(Resource.Id.user_pages);
+            var adapter = 
+                new ReactiveListAdapter<FacebookAPI.Page>(
+                    this.ViewModel.Pages,
+                    (viewModel, parent) =>
+                        {
+                            var view = new TextView(parent.Context);
+                            view.Text = viewModel.name;
+                            return view;
+                        });
+            userpages.Adapter = adapter;
 
             var drawerLayout = this.FindViewById<DrawerLayout> (Resource.Id.drawer_layout);
             drawerLayout.SetDrawerShadow (Resource.Drawable.drawer_shadow_light, (int)GravityFlags.Start);
@@ -78,7 +91,16 @@ namespace FacebookPagesApp
                     {
                         this.ViewModel.ShowUnpublishedPosts = x;
                     }));
-     
+             
+            subscription.Add(
+                Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")
+                          .Select(x => this.ViewModel.Pages[x.EventArgs.Position])
+                          .Subscribe(x => 
+                            { 
+                                this.ViewModel.CurrentPage = x;
+                            }));
+
+
             this.subscription = subscription;
         }
 

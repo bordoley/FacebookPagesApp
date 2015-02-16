@@ -47,7 +47,7 @@ module internal FacebookConverters =
             o.["data"].Children() 
             |> Seq.map(fun o ->
                 let id = string o.["id"]
-                let accessToken = string o.["accessToken"]
+                let accessToken = string o.["access_token"]
                 let name = string o.["name"]
 
                 { id = id; accessToken = accessToken; name = name })

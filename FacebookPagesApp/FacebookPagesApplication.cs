@@ -8,6 +8,7 @@ using RxApp;
 using Android.App;
 using Android.Runtime;
 using ModernHttpClient; 
+using Microsoft.FSharp.Core;
 
 using Xamarin;
 
@@ -35,9 +36,7 @@ namespace FacebookPagesApp
 
         public override IApplication ProvideApplication()
         {
-            var httpClient = new HttpClient(new NativeMessageHandler());
-            // FIXME: doing this here is causing all types of assmbly issues I don't want to deal with so fuck it.
-            //var functionalClient = FunctionalHttp.Client.HttpClient.FromNetHttpClient(httpClient);
+            var httpClient = FunctionalHttp.Client.HttpClient.FromNetHttpClient(new HttpClient(new NativeMessageHandler()));
 
             return ApplicationController.create(
                 this.NavigationStack,

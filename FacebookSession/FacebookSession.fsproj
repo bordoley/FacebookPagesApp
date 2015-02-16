@@ -53,9 +53,7 @@
     <Reference Include="Xamarin.Facebook">
       <HintPath>..\packages\Xamarin.Facebook.3.22.0.0\lib\MonoAndroid40\Xamarin.Facebook.dll</HintPath>
     </Reference>
-    <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.3.1.2.1\lib\MonoAndroid\FSharp.Core.dll</HintPath>
-    </Reference>
+    <Reference Include="FSharp.Core" />
     <Reference Include="System.Reactive.Interfaces">
       <HintPath>..\packages\Rx-Interfaces.2.2.5\lib\portable-windows8+net45+wp8\System.Reactive.Interfaces.dll</HintPath>
     </Reference>

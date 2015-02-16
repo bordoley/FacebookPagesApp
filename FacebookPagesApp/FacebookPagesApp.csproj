@@ -99,7 +99,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net" />
     <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.3.1.2.1\lib\MonoAndroid\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSharp.Core.3.1.2.1\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

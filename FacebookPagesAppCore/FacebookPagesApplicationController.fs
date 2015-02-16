@@ -102,11 +102,8 @@ module ApplicationController =
                 vm.PublishTime.Seconds)) 
         |> Observable.subscribe(fun _ -> ())
 
-    // FIXME: Ideally I want this to be a PCL and to have a FunctionalHTtpClient passed in, but I'm getting all kinds of assembly issues in FunctionalPagesAppCore with 
-    // F# types so fuck it.
-    let create (navStack:INavigationStack) (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) (httpClient:System.Net.Http.HttpClient) = 
-        let subscription : IDisposable ref= ref null    
-        let httpClient = HttpClient.fromNetHttpClient httpClient                                      
+    let create (navStack:INavigationStack) (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream, Stream>) = 
+        let subscription : IDisposable ref= ref null                                         
 
         { new IApplication with
             member this.Init () =

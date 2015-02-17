@@ -1,49 +1,49 @@
 ﻿using System;
-//using System.Reactive;
 using System.Reactive.Linq;
-using System.Windows.Input;
-using ReactiveUI;
 using RxApp;
 using Splat;
 using Microsoft.FSharp.Core;
+
+using Unit = System.Reactive.Unit;
 
 namespace FacebookPagesApp
 {
     public interface IPagesViewModel : INavigableViewModel, IServiceViewModel
     {
-        string UserName { get; }
-        IBitmap ProfilePhoto { get; }
+        IObservable<string> UserName { get; }
+        IObservable<IBitmap> ProfilePhoto { get; }
         bool ShowUnpublishedPosts { set; }
 
         FacebookAPI.Page CurrentPage { set; }
 
-        IReadOnlyReactiveList<FacebookAPI.Page> Pages { get; }
+        IRxReadOnlyList<FacebookAPI.Page> Pages { get; }
 
-        IReadOnlyReactiveList<object> Posts { get; }
+        IRxReadOnlyList<object> Posts { get; }
 
-        ICommand CreatePost { get; }
+        IRxCommand CreatePost { get; }
 
-        ICommand LogOut { get; }
+        IRxCommand LogOut { get; }
 
-        ICommand RefeshPosts { get; }
-        bool RefreshingPosts { get; }
+        IRxCommand RefeshPosts { get; }
+        IObservable<bool> RefreshingPosts { get; }
     }
 
     public interface IPagesControllerModel : INavigableControllerModel, IServiceControllerModel
     {
         string UserName { set; }
+
         IBitmap ProfilePhoto { set; }
 
         bool ShowUnpublishedPosts { get; }
 
-        IReactiveList<FacebookAPI.Page> Pages { get; }
+        IRxList<FacebookAPI.Page> Pages { get; }
 
         FSharpOption<FacebookAPI.Page> CurrentPage { set; get; }
 
         // Don't make F# code need to know about ReactiveUI
         IObservable<FacebookAPI.Page> LoadPage { get; }
 
-        IReactiveList<object> Posts { get; }
+        IRxList<object> Posts { get; }
 
         IObservable<Unit> CreatePost { get; }
 
@@ -55,82 +55,82 @@ namespace FacebookPagesApp
 
     public class PagesModel : MobileModel, IPagesViewModel, IPagesControllerModel
     {
-        private readonly ReactiveList<FacebookAPI.Page> _pages = new ReactiveList<FacebookAPI.Page>();
-        private readonly ReactiveList<object> _posts = new ReactiveList<object>();
+        private readonly IRxList<FacebookAPI.Page> _pages = RxList.Create<FacebookAPI.Page>();
+        private readonly IRxList<object> _posts = RxList.Create<object>();
 
-        private readonly IReactiveCommand<object> _createPost = ReactiveCommand.Create();
-        private readonly IReactiveCommand<object> _logOut = ReactiveCommand.Create();
-        private readonly IReactiveCommand<object> _refreshPosts;
+        private readonly IRxCommand _createPost = RxCommand.Create();
+        private readonly IRxCommand _logOut = RxCommand.Create();
+        private readonly IRxCommand _refreshPosts;
 
-        private bool _refreshingPosts = false;
-        private bool _showUnpublishedPosts = false;
-        private string _userName = "";
-        private IBitmap _profilePhoto = null;
+        private readonly IRxProperty<bool> _refreshingPosts = RxProperty.Create(false);
+        private readonly IRxProperty<bool> _showUnpublishedPosts =  RxProperty.Create<bool>(false);
+        private readonly IRxProperty<string> _userName = RxProperty.Create<string>("");
+        private readonly IRxProperty<IBitmap> _profilePhoto = RxProperty.Create<IBitmap>(null);
 
-        private FSharpOption<FacebookAPI.Page> _currentPage = FSharpOption<FacebookAPI.Page>.None;
+        private IRxProperty<FSharpOption<FacebookAPI.Page>> _currentPage = RxProperty.Create(FSharpOption<FacebookAPI.Page>.None);
 
         public PagesModel()
         {
-            _refreshPosts = this.WhenAnyValue(x => ((IPagesViewModel) x).RefreshingPosts).Select(x => !x).ToCommand();
+            _refreshPosts = _refreshingPosts.Select(x => !x).ToCommand();
         }
             
-        bool IPagesViewModel.RefreshingPosts { get { return _refreshingPosts; } }
+        IObservable<bool> IPagesViewModel.RefreshingPosts { get { return _refreshingPosts; } }
 
-        bool IPagesControllerModel.RefreshingPosts { set { this.RaiseAndSetIfChanged(ref _refreshingPosts, value); } }
-
-
-        bool IPagesViewModel.ShowUnpublishedPosts { set { this.RaiseAndSetIfChanged(ref _showUnpublishedPosts, value); } }
-
-        bool IPagesControllerModel.ShowUnpublishedPosts { get { return _showUnpublishedPosts; } }
+        bool IPagesControllerModel.RefreshingPosts { set { _refreshingPosts.Value = value; } }
 
 
-        string IPagesViewModel.UserName { get { return _userName; } }
+        bool IPagesViewModel.ShowUnpublishedPosts { set { _showUnpublishedPosts.Value = value; } }
 
-        string IPagesControllerModel.UserName { set { this.RaiseAndSetIfChanged(ref _userName, value); } }
-
-
-        IBitmap IPagesViewModel.ProfilePhoto { get { return _profilePhoto; } }
-
-        IBitmap IPagesControllerModel.ProfilePhoto { set { this.RaiseAndSetIfChanged(ref _profilePhoto, value); } }
+        bool IPagesControllerModel.ShowUnpublishedPosts { get { return _showUnpublishedPosts.Value; } }
 
 
-        FacebookAPI.Page IPagesViewModel.CurrentPage { set { this.RaiseAndSetIfChanged(ref _currentPage, FSharpOption<FacebookAPI.Page>.Some(value)); } }
+        IObservable<string> IPagesViewModel.UserName { get { return _userName; } }
+
+        string IPagesControllerModel.UserName { set { _userName.Value = value; } }
+
+
+        IObservable<IBitmap> IPagesViewModel.ProfilePhoto { get { return _profilePhoto; } }
+
+        IBitmap IPagesControllerModel.ProfilePhoto { set { _profilePhoto.Value = value; } }
+
+
+        FacebookAPI.Page IPagesViewModel.CurrentPage { set { _currentPage.Value = FSharpOption<FacebookAPI.Page>.Some(value); } }
 
         FSharpOption<FacebookAPI.Page> IPagesControllerModel.CurrentPage 
         { 
-            get { return _currentPage; }
-            set { this.RaiseAndSetIfChanged(ref _currentPage, value); } 
+            get { return _currentPage.Value; }
+            set { _currentPage.Value = value; } 
         }
 
         IObservable<FacebookAPI.Page> IPagesControllerModel.LoadPage 
         { 
-            get { return ((IPagesControllerModel) this).WhenAnyValue(x => x.CurrentPage).Where(x => OptionModule.IsSome(x)).Select(x => x.Value); } 
+            get { return this._currentPage.Where(x => OptionModule.IsSome(x)).Select(x => x.Value); } 
         }
 
 
-        IReadOnlyReactiveList<FacebookAPI.Page> IPagesViewModel.Pages { get { return _pages; } }
+        IRxReadOnlyList<FacebookAPI.Page> IPagesViewModel.Pages { get { return _pages.ToRxReadOnlyList(); } }
 
-        IReactiveList<FacebookAPI.Page> IPagesControllerModel.Pages { get { return _pages; } }
-
-
-        IReadOnlyReactiveList<object> IPagesViewModel.Posts { get { return _posts; } }
-
-        IReactiveList<object> IPagesControllerModel.Posts { get { return _posts; } }
+        IRxList<FacebookAPI.Page> IPagesControllerModel.Pages { get { return _pages; } }
 
 
-        ICommand IPagesViewModel.CreatePost { get { return _createPost; } }
+        IRxReadOnlyList<object> IPagesViewModel.Posts { get { return _posts.ToRxReadOnlyList(); } }
 
-        IObservable<Unit> IPagesControllerModel.CreatePost { get { return _createPost.Select<object, Unit>(_ => null); } }
-
-
-        ICommand IPagesViewModel.LogOut { get { return _logOut; } }
-
-        IObservable<Unit> IPagesControllerModel.LogOut { get { return _logOut.Select<object, Unit>(_ => null); } }
+        IRxList<object> IPagesControllerModel.Posts { get { return _posts; } }
 
 
-        ICommand IPagesViewModel.RefeshPosts { get { return _refreshPosts; } }
+        IRxCommand IPagesViewModel.CreatePost { get { return _createPost; } }
 
-        IObservable<Unit> IPagesControllerModel.RefreshPosts { get { return _refreshPosts.Select<object, Unit>(_ => null); } }
+        IObservable<Unit> IPagesControllerModel.CreatePost { get { return _createPost; } }
+
+
+        IRxCommand IPagesViewModel.LogOut { get { return _logOut; } }
+
+        IObservable<Unit> IPagesControllerModel.LogOut { get { return _logOut; } }
+
+
+        IRxCommand IPagesViewModel.RefeshPosts { get { return _refreshPosts; } }
+
+        IObservable<Unit> IPagesControllerModel.RefreshPosts { get { return _refreshPosts; } }
     }
 }
 

@@ -7,7 +7,6 @@ using Android.Views;
 using Android.Widget;
 using Android.Support.V4.Widget;
 
-using ReactiveUI;
 using RxApp;
 using Splat;
 
@@ -44,15 +43,10 @@ namespace FacebookPagesApp
             showUnpublishedPosts = this.FindViewById<Switch>(Resource.Id.show_unpublished);
 
             userpages = this.FindViewById<ListView>(Resource.Id.user_pages);
-            var adapter = 
-                new ReactiveListAdapter<FacebookAPI.Page>(
-                    this.ViewModel.Pages,
-                    (viewModel, parent) =>
-                        {
-                            var view = new TextView(parent.Context);
-                            view.Text = viewModel.name;
-                            return view;
-                        });
+            var adapter = this.ViewModel.Pages.GetAdapter(
+                    (viewModel, parent) => new TextView(parent.Context),
+                    (viewModel, view) => { view.Text = viewModel.name; });
+
             userpages.Adapter = adapter;
 
             var drawerLayout = this.FindViewById<DrawerLayout> (Resource.Id.drawer_layout);
@@ -67,20 +61,23 @@ namespace FacebookPagesApp
 
             subscription.Add(
                 Observable.FromEventPattern(refresher, "Refresh").Subscribe(_ => 
-                    this.ViewModel.RefeshPosts.Execute(null)));
+                    this.ViewModel.RefeshPosts.Execute()));
 
             subscription.Add(
-                this.WhenAnyValue(x => x.ViewModel.RefreshingPosts).Where(x => !x).Subscribe(_ => 
+                this.ViewModel.RefreshingPosts.Where(x => !x).Subscribe(_ => 
                     refresher.Refreshing = false));
 
+            // FIXME: RXApp will support a simpler binding syntax
             subscription.Add(
-                this.BindCommand(this.ViewModel, vm => vm.LogOut, view => view.logoutButton));
+                this.ViewModel.LogOut.CanExecute.Subscribe(x => this.logoutButton.Enabled = x));
+            subscription.Add(
+                Observable.FromEventPattern(this.logoutButton, "Click").InvokeCommand(this.ViewModel.LogOut));    
 
             subscription.Add(
-                this.WhenAnyValue(x => x.ViewModel.UserName).Subscribe(x => this.userName.Text = x));
+                this.ViewModel.UserName.Subscribe(x => this.userName.Text = x));
 
             subscription.Add(
-                this.WhenAnyValue(x => x.ViewModel.ProfilePhoto).Where(x => x != null).Subscribe(bitmap =>
+                this.ViewModel.ProfilePhoto.Where(x => x != null).Subscribe(bitmap =>
                     {
                         profilePicture.SetMinimumHeight((int)bitmap.Height);
                         profilePicture.SetImageDrawable (bitmap.ToNative());
@@ -115,7 +112,7 @@ namespace FacebookPagesApp
             switch (item.ItemId)
             {
                 case Resource.Id.pages_action_bar_new_post:
-                    this.ViewModel.CreatePost.Execute(null);
+                    this.ViewModel.CreatePost.Execute();
                     break;
             }
             return base.OnOptionsItemSelected(item);

@@ -1,5 +1,4 @@
 ﻿using System;
-using ReactiveUI;
 using RxApp;
 
 namespace FacebookPagesApp

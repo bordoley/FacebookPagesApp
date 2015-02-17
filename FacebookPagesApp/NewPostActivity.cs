@@ -8,7 +8,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 
-using ReactiveUI;
 using RxApp;
 
 using System.Reactive.Disposables;
@@ -116,31 +115,31 @@ namespace FacebookPagesApp
                 Observable.FromEventPattern(showDatePicker, "Click")
                     .SelectMany(_ => Task.FromResult(DateTime.Now))
                     //.SelectMany(_ => CalendarHelpers.PickDate(this.SupportFragmentManager, this.ViewModel.PublishDate))
-                    // For some reason the CB is getting scheduled on the thread pool.
-                    .ObserveOn(ReactiveUI.RxApp.MainThreadScheduler) 
+                    // For some reason the CB is getting scheduled on the thread pool. 
                     .Subscribe(date =>
                         {
-                            this.ViewModel.PublishDate = date;
+                            // FIXME: RxApp will support a scheduler
+                            this.RunOnUiThread(() => { this.ViewModel.PublishDate.Value = date; });
                         }));
 
             subscription.Add(
                 // FIxME: format the date pretty
-                this.WhenAnyValue(x => x.ViewModel.PublishDate).Select(x => x.ToString()).Subscribe(x => this.showDatePicker.Text = x));
+                this.ViewModel.PublishDate.Select(x => x.ToString()).Subscribe(x => this.showDatePicker.Text = x));
 
 
             subscription.Add(
                 Observable.FromEventPattern(showTimePicker, "Click")
                     .SelectMany(_ => Task.FromResult(new TimeSpan())) //CalendarHelpers.PickTime(this.SupportFragmentManager, this.ViewModel.PublishTime))
-                    // For some reason the CB is getting scheduled on the thread pool.
-                    .ObserveOn(ReactiveUI.RxApp.MainThreadScheduler) 
+                    // For some reason the CB is getting scheduled on the thread pool. 
                     .Subscribe(time =>
-                        {
-                            this.ViewModel.PublishTime = time;
+                        {   
+                            // FIXME: RxAPP will provide schedulers
+                            this.RunOnUiThread(() => this.ViewModel.PublishTime.Value = time);
                         }));
 
             subscription.Add(
                 // FIxME: format the date pretty
-                this.WhenAnyValue(x => x.ViewModel.PublishTime).Select(x => x.ToString()).Subscribe(x => this.showTimePicker.Text = x));
+                this.ViewModel.PublishTime.Select(x => x.ToString()).Subscribe(x => this.showTimePicker.Text = x));
                 
             this.subscription = subscription;
         }
@@ -158,7 +157,7 @@ namespace FacebookPagesApp
                 case Resource.Id.new_post_action_bar_post:
                     // late bind the text to avoid lots of strings copies
                     this.ViewModel.PostContent = postContent.Text;
-                    this.ViewModel.PublishPost.Execute(null);
+                    this.ViewModel.PublishPost.Execute();
                     break;
             }
             return base.OnOptionsItemSelected(item);

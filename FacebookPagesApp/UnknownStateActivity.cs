@@ -6,7 +6,6 @@ using Android.OS;
 using Android.Views;
 using Android.Widget;
 
-using ReactiveUI;
 using RxApp;
 
 namespace FacebookPagesApp

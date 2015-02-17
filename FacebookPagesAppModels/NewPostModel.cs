@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Windows.Input;
-using ReactiveUI;
 using RxApp;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -10,11 +8,11 @@ namespace FacebookPagesApp
     public interface INewPostViewModel : INavigableViewModel, IServiceViewModel
     {
         bool ShouldPublishPost { set; }
-        DateTime PublishDate { get; set; }
-        TimeSpan PublishTime { get; set; }
+        IRxProperty<DateTime> PublishDate { get; }
+        IRxProperty<TimeSpan> PublishTime { get; }
         string PostContent { set; }
 
-        ICommand PublishPost { get; }
+        IRxCommand PublishPost { get; }
     }
 
     public interface INewPostControllerModel : INavigableControllerModel, IServiceControllerModel
@@ -27,48 +25,55 @@ namespace FacebookPagesApp
         IObservable<Unit> PublishPost { get; }
     }
 
-    public class NewPostModel : MobileModel, INewPostViewModel, INewPostControllerModel
+    public sealed class NewPostModel : MobileModel, INewPostViewModel, INewPostControllerModel
     {
-        private bool _shouldPublishPost = true;
-        private DateTime _publishDate = DateTime.Now;
-        private TimeSpan _publishTime;
-        private string _postContent = "";
+        private readonly IRxProperty<bool> _shouldPublishPost = RxProperty.Create<bool>(true);
+        private readonly IRxProperty<DateTime> _publishDate = RxProperty.Create<DateTime>(DateTime.Now);
+        private readonly IRxProperty<TimeSpan> _publishTime = RxProperty.Create<TimeSpan>(new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, 0));
+        private readonly IRxProperty<string> _postContent = RxProperty.Create<string>("");
 
-        private readonly IReactiveCommand<object> _publishPost = ReactiveCommand.Create();
+        private readonly IRxCommand _publishPost = RxCommand.Create();
 
         public NewPostModel()
         {
-            _publishTime = new TimeSpan(_publishDate.Hour, _publishDate.Minute, 0);
         }
 
         public bool ShouldPublishPost
         {
-            get { return _shouldPublishPost; }
-            set { this.RaiseAndSetIfChanged(ref _shouldPublishPost, value); }
+            get { return _shouldPublishPost.Value; }
+            set { _shouldPublishPost.Value = value; }
         }
 
-        public DateTime PublishDate 
+        DateTime INewPostControllerModel.PublishDate 
         {
-            get { return _publishDate; }
-            set { this.RaiseAndSetIfChanged(ref _publishDate, value); }
+            get { return _publishDate.Value; }
         }
 
-        public TimeSpan PublishTime
+        TimeSpan INewPostControllerModel.PublishTime
         {
-            get { return _publishTime; }
-            set { this.RaiseAndSetIfChanged(ref _publishTime, value); }
+            get { return _publishTime.Value; }
+        }
+
+        IRxProperty<DateTime> INewPostViewModel.PublishDate
+        {
+            get { return this._publishDate; }
+        }
+
+        IRxProperty<TimeSpan> INewPostViewModel.PublishTime
+        {
+            get { return this._publishTime; }
         }
 
         public string PostContent
         {
-            get { return _postContent; }
-            set { this.RaiseAndSetIfChanged(ref _postContent, value); }
+            get { return _postContent.Value; }
+            set { _postContent.Value = value; }
         }
 
 
-        ICommand INewPostViewModel.PublishPost { get { return _publishPost; } }
+        IRxCommand INewPostViewModel.PublishPost { get { return _publishPost; } }
 
-        IObservable<Unit> INewPostControllerModel.PublishPost { get { return _publishPost.Select(_ => Unit.Default); } }
+        IObservable<Unit> INewPostControllerModel.PublishPost { get { return _publishPost; } }
     }
 }
 

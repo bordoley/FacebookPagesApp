@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Windows.Input;
-using ReactiveUI;
 using RxApp;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -10,53 +8,51 @@ namespace FacebookPagesApp
     public interface ILoginViewModel : INavigableViewModel, IServiceViewModel
     {
         IObservable<Unit> LoginFailed { get; }
-        ICommand Login { get; }
-        bool NetworkAvailable { get; }
+        IRxCommand Login { get; }
+        IObservable<bool> NetworkAvailable { get; }
     }
 
     public interface ILoginControllerModel : INavigableControllerModel, IServiceControllerModel
     {
-        ICommand LoginFailed { get; }
+        IRxCommand LoginFailed { get; }
         IObservable<Unit> Login { get; }
         bool CanLogin { set; }
         bool NetworkAvailable { set; }
     }
 
-    public class LoginModel : MobileModel, ILoginViewModel, ILoginControllerModel
+    public sealed class LoginModel : MobileModel, ILoginViewModel, ILoginControllerModel
     {
-        private bool _canLogin = true;
+        private readonly IRxProperty<bool> _canLogin = RxProperty.Create<bool>(true);
 
-        private bool _networkAvailable = true;
+        private readonly IRxProperty<bool> _networkAvailable = RxProperty.Create<bool>(true);
 
-        private readonly IReactiveCommand<object> _login;
+        private readonly IRxCommand _login;
 
-        private readonly IReactiveCommand<object> _loginFailed = ReactiveCommand.Create();
+        private readonly IRxCommand _loginFailed = RxCommand.Create();
 
 
         public LoginModel() 
         { 
-            _login = this.WhenAnyValue(x => x.CanLogin).ToCommand();
+            _login = _canLogin.ToCommand();
         }
 
 
-        IObservable<Unit> ILoginViewModel.LoginFailed { get { return _loginFailed.Select(_ => Unit.Default); } }
+        IObservable<Unit> ILoginViewModel.LoginFailed { get { return _loginFailed; } }
 
-        ICommand ILoginControllerModel.LoginFailed { get { return _loginFailed; } }
-
-
-        ICommand ILoginViewModel.Login { get { return _login; } }
-
-        IObservable<Unit> ILoginControllerModel.Login { get { return _login.Select(_ => Unit.Default); } }
+        IRxCommand ILoginControllerModel.LoginFailed { get { return _loginFailed; } }
 
 
-        bool ILoginViewModel.NetworkAvailable { get { return _networkAvailable; } }
+        IRxCommand ILoginViewModel.Login { get { return _login; } }
 
-        bool ILoginControllerModel.NetworkAvailable { set { this.RaiseAndSetIfChanged(ref _networkAvailable, value); } }
+        IObservable<Unit> ILoginControllerModel.Login { get { return _login; } }
 
 
-        bool ILoginControllerModel.CanLogin { set { this.RaiseAndSetIfChanged(ref _canLogin, value); } }
+        IObservable<bool> ILoginViewModel.NetworkAvailable { get { return _networkAvailable; } }
 
-        private bool CanLogin { get { return _canLogin; } }
+        bool ILoginControllerModel.NetworkAvailable { set { _networkAvailable.Value = value; } }
+
+
+        bool ILoginControllerModel.CanLogin { set { _canLogin.Value = value; } }
     }
 }
 

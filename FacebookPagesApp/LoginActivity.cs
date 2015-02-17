@@ -7,7 +7,6 @@ using Android.Widget;
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using ReactiveUI;
 using RxApp;
 
 namespace FacebookPagesApp
@@ -46,21 +45,21 @@ namespace FacebookPagesApp
 
             var subscription = new CompositeDisposable();
 
+            // FIXME: RXApp will support a simpler binding syntax
             subscription.Add(
-                this.BindCommand(
-                    this.ViewModel, 
-                    vm => vm.Login,
-                    view => view.authButton));
+                this.ViewModel.Login.CanExecute.Subscribe(x => this.authButton.Enabled = x));
+            subscription.Add(
+                Observable.FromEventPattern(this.authButton, "Click").InvokeCommand(this.ViewModel.Login)); 
 
             subscription.Add(
-                this.WhenAnyObservable(x => x.ViewModel.LoginFailed).Subscribe(_ =>
+                this.ViewModel.LoginFailed.Subscribe(_ =>
                     Toast.MakeText(
                         this, 
                         this.Resources.GetString(Resource.String.login_failed), 
                         ToastLength.Long).Show())); 
 
             subscription.Add(
-                this.WhenAnyValue(x => x.ViewModel.NetworkAvailable).Subscribe(networkAvailable =>
+                this.ViewModel.NetworkAvailable.Subscribe(networkAvailable =>
                     {
                         if (networkAvailable)
                         {

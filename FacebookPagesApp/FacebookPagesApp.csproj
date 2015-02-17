@@ -78,9 +78,6 @@
     <Reference Include="Xamarin.Facebook">
       <HintPath>..\packages\Xamarin.Facebook.3.22.0.0\lib\MonoAndroid40\Xamarin.Facebook.dll</HintPath>
     </Reference>
-    <Reference Include="ReactiveUI">
-      <HintPath>..\packages\reactiveui-core.6.4.0.1\lib\MonoAndroid\ReactiveUI.dll</HintPath>
-    </Reference>
     <Reference Include="ModernHttpClient">
       <HintPath>..\packages\modernhttpclient.2.2.0\lib\MonoAndroid\ModernHttpClient.dll</HintPath>
     </Reference>

@@ -59,22 +59,11 @@ namespace FacebookPagesApp
 
             var subscription = new CompositeDisposable();
 
-            subscription.Add(
-                Observable.FromEventPattern(refresher, "Refresh").Subscribe(_ => 
-                    this.ViewModel.RefeshPosts.Execute()));
+            subscription.Add(this.ViewModel.RefeshPosts.BindTo(refresher));
+                
+            subscription.Add(this.ViewModel.LogOut.BindTo(this.logoutButton));   
 
-            subscription.Add(
-                this.ViewModel.RefreshingPosts.Where(x => !x).Subscribe(_ => 
-                    refresher.Refreshing = false));
-
-            // FIXME: RXApp will support a simpler binding syntax
-            subscription.Add(
-                this.ViewModel.LogOut.CanExecute.Subscribe(x => this.logoutButton.Enabled = x));
-            subscription.Add(
-                Observable.FromEventPattern(this.logoutButton, "Click").InvokeCommand(this.ViewModel.LogOut));    
-
-            subscription.Add(
-                this.ViewModel.UserName.Subscribe(x => this.userName.Text = x));
+            subscription.Add(this.ViewModel.UserName.BindTo(this.userName));
 
             subscription.Add(
                 this.ViewModel.ProfilePhoto.Where(x => x != null).Subscribe(bitmap =>
@@ -83,11 +72,7 @@ namespace FacebookPagesApp
                         profilePicture.SetImageDrawable (bitmap.ToNative());
                     }));
 
-            subscription.Add(
-                Observable.FromEventPattern<CompoundButton.CheckedChangeEventArgs>(showUnpublishedPosts, "CheckedChange").Select(x => x.EventArgs.IsChecked).Subscribe(x =>
-                    {
-                        this.ViewModel.ShowUnpublishedPosts = x;
-                    }));
+            subscription.Add(this.ViewModel.ShowUnpublishedPosts.BindTo(this.showUnpublishedPosts));
              
             subscription.Add(
                 Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")

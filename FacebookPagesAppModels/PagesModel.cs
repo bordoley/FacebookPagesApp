@@ -12,7 +12,7 @@ namespace FacebookPagesApp
     {
         IObservable<string> UserName { get; }
         IObservable<IBitmap> ProfilePhoto { get; }
-        bool ShowUnpublishedPosts { set; }
+        IRxProperty<bool> ShowUnpublishedPosts { get; }
 
         FacebookAPI.Page CurrentPage { set; }
 
@@ -25,7 +25,6 @@ namespace FacebookPagesApp
         IRxCommand LogOut { get; }
 
         IRxCommand RefeshPosts { get; }
-        IObservable<bool> RefreshingPosts { get; }
     }
 
     public interface IPagesControllerModel : INavigableControllerModel, IServiceControllerModel
@@ -34,7 +33,7 @@ namespace FacebookPagesApp
 
         IBitmap ProfilePhoto { set; }
 
-        bool ShowUnpublishedPosts { get; }
+        IObservable<bool> ShowUnpublishedPosts { get; }
 
         IRxList<FacebookAPI.Page> Pages { get; }
 
@@ -71,17 +70,15 @@ namespace FacebookPagesApp
 
         public PagesModel()
         {
-            _refreshPosts = _refreshingPosts.Select(x => !x).ToCommand();
+            _refreshPosts = _refreshingPosts.ToCommand();
         }
-            
-        IObservable<bool> IPagesViewModel.RefreshingPosts { get { return _refreshingPosts; } }
 
         bool IPagesControllerModel.RefreshingPosts { set { _refreshingPosts.Value = value; } }
 
 
-        bool IPagesViewModel.ShowUnpublishedPosts { set { _showUnpublishedPosts.Value = value; } }
+        IRxProperty<bool> IPagesViewModel.ShowUnpublishedPosts { get { return _showUnpublishedPosts; } }
 
-        bool IPagesControllerModel.ShowUnpublishedPosts { get { return _showUnpublishedPosts.Value; } }
+        IObservable<bool> IPagesControllerModel.ShowUnpublishedPosts { get { return _showUnpublishedPosts; } }
 
 
         IObservable<string> IPagesViewModel.UserName { get { return _userName; } }

@@ -46,10 +46,7 @@ namespace FacebookPagesApp
             var subscription = new CompositeDisposable();
 
             // FIXME: RXApp will support a simpler binding syntax
-            subscription.Add(
-                this.ViewModel.Login.CanExecute.Subscribe(x => this.authButton.Enabled = x));
-            subscription.Add(
-                Observable.FromEventPattern(this.authButton, "Click").InvokeCommand(this.ViewModel.Login)); 
+            subscription.Add(this.ViewModel.Login.BindTo(this.authButton));
 
             subscription.Add(
                 this.ViewModel.LoginFailed.Subscribe(_ =>

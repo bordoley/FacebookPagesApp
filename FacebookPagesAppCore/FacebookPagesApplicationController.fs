@@ -82,7 +82,7 @@ module ApplicationController =
                 // FIXME: Need to support AddRange on IRxList
                 pages |> Seq.iter vm.Pages.Add
                 match pages with 
-                | head :: _ -> vm.CurrentPage <- Some head
+                | head :: _ -> vm.CurrentPage.Value <- Some head
                 | _ -> ()
             | _ ->()
         } |> Async.StartImmediate
@@ -96,15 +96,9 @@ module ApplicationController =
         retval :> IDisposable
 
     let private newPostController (vm:INewPostControllerModel) (navStack:INavigationStack) =
-        vm.PublishPost 
-        |> Observable.map (fun _ -> 
-            DateTime(
-                vm.PublishDate.Year, 
-                vm.PublishDate.Month, 
-                vm.PublishDate.Day, 
-                vm.PublishTime.Hours, 
-                vm.PublishTime.Minutes, 
-                vm.PublishTime.Seconds)) 
+        // fixme calculate the date + time
+        Observable.combineLatest (fun date time -> date) vm.PublishDate vm.PublishTime
+        |> Observable.combineLatest (fun date content -> ()) vm.PostContent 
         |> Observable.subscribe(fun _ -> ())
 
     let create (navStack:INavigationStack) (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream, Stream>) = 

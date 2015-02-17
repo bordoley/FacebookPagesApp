@@ -37,7 +37,7 @@ namespace FacebookPagesApp
 
         IRxList<FacebookAPI.Page> Pages { get; }
 
-        FSharpOption<FacebookAPI.Page> CurrentPage { set; get; }
+        IRxProperty<FSharpOption<FacebookAPI.Page>> CurrentPage { get; }
 
         // Don't make F# code need to know about ReactiveUI
         IObservable<FacebookAPI.Page> LoadPage { get; }
@@ -93,10 +93,9 @@ namespace FacebookPagesApp
 
         FacebookAPI.Page IPagesViewModel.CurrentPage { set { _currentPage.Value = FSharpOption<FacebookAPI.Page>.Some(value); } }
 
-        FSharpOption<FacebookAPI.Page> IPagesControllerModel.CurrentPage 
+        IRxProperty<FSharpOption<FacebookAPI.Page>> IPagesControllerModel.CurrentPage 
         { 
-            get { return _currentPage.Value; }
-            set { _currentPage.Value = value; } 
+            get { return _currentPage; } 
         }
 
         IObservable<FacebookAPI.Page> IPagesControllerModel.LoadPage 

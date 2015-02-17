@@ -59,9 +59,9 @@ namespace FacebookPagesApp
 
             var subscription = new CompositeDisposable();
 
-            subscription.Add(this.ViewModel.RefeshPosts.BindTo(refresher));
+            subscription.Add(this.ViewModel.RefeshPosts.Bind(refresher));
                 
-            subscription.Add(this.ViewModel.LogOut.BindTo(this.logoutButton));   
+            subscription.Add(this.ViewModel.LogOut.Bind(this.logoutButton));   
 
             subscription.Add(this.ViewModel.UserName.BindTo(this.userName));
 
@@ -72,7 +72,7 @@ namespace FacebookPagesApp
                         profilePicture.SetImageDrawable (bitmap.ToNative());
                     }));
 
-            subscription.Add(this.ViewModel.ShowUnpublishedPosts.BindTo(this.showUnpublishedPosts));
+            subscription.Add(this.ViewModel.ShowUnpublishedPosts.Bind(this.showUnpublishedPosts));
              
             subscription.Add(
                 Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")

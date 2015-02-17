@@ -114,13 +114,8 @@ namespace FacebookPagesApp
             subscription.Add(
                 Observable.FromEventPattern(showDatePicker, "Click")
                     .SelectMany(_ => Task.FromResult(DateTime.Now))
-                    //.SelectMany(_ => CalendarHelpers.PickDate(this.SupportFragmentManager, this.ViewModel.PublishDate))
-                    // For some reason the CB is getting scheduled on the thread pool. 
-                    .Subscribe(date =>
-                        {
-                            // FIXME: RxApp will support a scheduler
-                            this.RunOnUiThread(() => { this.ViewModel.PublishDate.Value = date; });
-                        }));
+                    .ObserveOnMainThread()
+                    .Subscribe(date => { this.ViewModel.PublishDate.Value = date; }));
 
             subscription.Add(
                 // FIxME: format the date pretty
@@ -130,12 +125,8 @@ namespace FacebookPagesApp
             subscription.Add(
                 Observable.FromEventPattern(showTimePicker, "Click")
                     .SelectMany(_ => Task.FromResult(new TimeSpan())) //CalendarHelpers.PickTime(this.SupportFragmentManager, this.ViewModel.PublishTime))
-                    // For some reason the CB is getting scheduled on the thread pool. 
-                    .Subscribe(time =>
-                        {   
-                            // FIXME: RxAPP will provide schedulers
-                            this.RunOnUiThread(() => this.ViewModel.PublishTime.Value = time);
-                        }));
+                    .ObserveOnMainThread() 
+                    .Subscribe(time => { this.ViewModel.PublishTime.Value = time; }));
 
             subscription.Add(
                 // FIxME: format the date pretty

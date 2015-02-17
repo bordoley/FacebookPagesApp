@@ -17,11 +17,10 @@ namespace FacebookPagesApp
 
     public interface INewPostControllerModel : INavigableControllerModel, IServiceControllerModel
     {
-        bool ShouldPublishPost { get; }
-        DateTime PublishDate { get; }
-        TimeSpan PublishTime { get; }
-        string PostContent { get; }
-
+        IObservable<bool> ShouldPublishPost { get; }
+        IObservable<DateTime> PublishDate { get; }
+        IObservable<TimeSpan> PublishTime { get; }
+        IObservable<string> PostContent { get; }
         IObservable<Unit> PublishPost { get; }
     }
 
@@ -38,20 +37,24 @@ namespace FacebookPagesApp
         {
         }
 
-        public bool ShouldPublishPost
+        bool INewPostViewModel.ShouldPublishPost
         {
-            get { return _shouldPublishPost.Value; }
             set { _shouldPublishPost.Value = value; }
         }
 
-        DateTime INewPostControllerModel.PublishDate 
+        IObservable<bool> INewPostControllerModel.ShouldPublishPost
         {
-            get { return _publishDate.Value; }
+            get { return _shouldPublishPost; }
         }
 
-        TimeSpan INewPostControllerModel.PublishTime
+        IObservable<DateTime> INewPostControllerModel.PublishDate 
         {
-            get { return _publishTime.Value; }
+            get { return _publishDate; }
+        }
+
+        IObservable<TimeSpan> INewPostControllerModel.PublishTime
+        {
+            get { return _publishTime; }
         }
 
         IRxProperty<DateTime> INewPostViewModel.PublishDate
@@ -64,10 +67,14 @@ namespace FacebookPagesApp
             get { return this._publishTime; }
         }
 
-        public string PostContent
+        string INewPostViewModel.PostContent
         {
-            get { return _postContent.Value; }
             set { _postContent.Value = value; }
+        }
+
+        IObservable<string> INewPostControllerModel.PostContent
+        {
+            get { return _postContent; }
         }
 
 

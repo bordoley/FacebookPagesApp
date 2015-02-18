@@ -18,7 +18,7 @@ using System.Reactive.Linq;
 namespace FacebookPagesApp
 {
     [Activity(Label="Page")]    
-    public class PagesActivity : RxActivity<IPagesViewModel>
+    public sealed class PagesActivity : RxActivity<IPagesViewModel>
     {
         private IDisposable subscription = null;
 

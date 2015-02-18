@@ -11,7 +11,7 @@ using RxApp;
 namespace FacebookPagesApp
 {
     [Activity()]    
-    public class UnknownStateActivity : RxActivity<IUnknownStateViewModel>
+    public sealed class UnknownStateActivity : RxActivity<IUnknownStateViewModel>
     {
         public UnknownStateActivity()
         {

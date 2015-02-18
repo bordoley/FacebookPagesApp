@@ -12,7 +12,7 @@ using RxApp;
 namespace FacebookPagesApp
 {
     [Activity(Theme = "@style/LoginTheme", Label = "Pages Login")]    
-    public class LoginActivity : RxActivity<ILoginViewModel>
+    public sealed class LoginActivity : RxActivity<ILoginViewModel>
     {
         // This is very, very evil, but it works reliably and allows the rest of the code to pretend
         // that activities don't matter.

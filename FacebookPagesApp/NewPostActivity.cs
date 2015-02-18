@@ -76,7 +76,7 @@ namespace FacebookPagesApp
 
 
     [Activity(Label = "NewPostActivity")]			
-    public class NewPostActivity : RxActivity<INewPostViewModel>
+    public sealed class NewPostActivity : RxActivity<INewPostViewModel>
     {
         private IDisposable subscription = null;
 

@@ -22,7 +22,6 @@ module internal SplatConverters =
 
 module internal FacebookConverters =
     let streamToUser (contentInfo:ContentInfo, stream:Stream) = async {
-        let callingContext = SynchronizationContext.Current
         do! Async.SwitchToThreadPool ()
 
         use stream = stream
@@ -30,13 +29,10 @@ module internal FacebookConverters =
         let o = JToken.ReadFrom(new JsonTextReader(sr)) :?> JObject
         let firstName = string o.["first_name"]
 
-        do! Async.SwitchToContext callingContext
-
         return (contentInfo, { firstName = firstName })
     }
 
     let streamToPages (contentInfo:ContentInfo, stream:Stream) = async {
-        let callingContext = SynchronizationContext.Current
         do! Async.SwitchToThreadPool ()
 
         use stream = stream
@@ -52,8 +48,6 @@ module internal FacebookConverters =
 
                 { id = id; accessToken = accessToken; name = name })
             |> List.ofSeq
-               
-        do! Async.SwitchToContext callingContext
 
         return (contentInfo, result)
     }

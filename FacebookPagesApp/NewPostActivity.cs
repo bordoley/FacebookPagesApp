@@ -110,9 +110,10 @@ namespace FacebookPagesApp
                 this.ViewModel.ShouldPublishPost.Bind(shouldPublishPost));
 
             subscription.Add(
+
                 Observable.FromEventPattern(showDatePicker, "Click")
                     .SelectMany(_ => Task.FromResult(DateTime.Now))
-                    .Subscribe(date => { this.ViewModel.PublishDate.Value = date; }));
+                    .BindTo(this.ViewModel.PublishDate));
 
             subscription.Add(
                 // FIxME: format the date pretty
@@ -121,7 +122,7 @@ namespace FacebookPagesApp
             subscription.Add(
                 Observable.FromEventPattern(showTimePicker, "Click")
                     .SelectMany(_ => Task.FromResult(new TimeSpan())) //CalendarHelpers.PickTime(this.SupportFragmentManager, this.ViewModel.PublishTime))
-                    .Subscribe(time => { this.ViewModel.PublishTime.Value = time; }));
+                    .BindTo(this.ViewModel.PublishTime));
 
             subscription.Add(
                 // FIxME: format the date pretty
@@ -130,7 +131,8 @@ namespace FacebookPagesApp
             subscription.Add(
                 Observable.FromEventPattern(this.postContent, "AfterTextChanged")
                           .Throttle(TimeSpan.FromSeconds(.5))
-                          .Subscribe(_ => { this.ViewModel.PostContent.Value = postContent.Text; }));
+                          .Select(x => postContent.Text)
+                          .BindTo(this.ViewModel.PostContent));
 
             this.subscription = subscription;
         }

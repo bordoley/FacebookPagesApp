@@ -94,7 +94,7 @@ namespace FacebookPagesApp
                             {
                                 var pages = await this.ViewModel.Pages.FirstAsync();
                                 return pages.ElementAtOrDefault(x);
-                            }).Subscribe(x => { this.ViewModel.CurrentPage = x; }));
+                            }).BindTo(this.ViewModel.CurrentPage));
 
             subscription.Add(
                 this.onScroll.Where(t =>

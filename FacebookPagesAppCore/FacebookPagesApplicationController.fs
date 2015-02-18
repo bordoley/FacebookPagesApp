@@ -38,7 +38,7 @@ module ApplicationController =
         let subscription = new CompositeDisposable()
 
         subscription.Add (
-            vm.Login 
+            vm.Login
             |> Observable.filter (fun _ -> !canLogin)
 
             // Protect against multiple calls to execute due to
@@ -90,7 +90,7 @@ module ApplicationController =
         let retval = new CompositeDisposable()
         retval.Add (vm.CreatePost |> Observable.subscribe (fun _ -> navStack.Push (NewPostModel())))
         retval.Add (vm.LogOut |> Observable.subscribe(fun _ -> sessionManager.Logout |> Async.StartImmediate))
-        //retval.Add (vm.LoadPage |> 
+        retval.Add (vm.LoadPage |> Observable.
 
         retval :> IDisposable
 

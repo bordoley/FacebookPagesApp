@@ -77,11 +77,7 @@ namespace FacebookPagesApp
             subscription.Add(
                 Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")
                           .Select(x => this.ViewModel.Pages[x.EventArgs.Position])
-                          .Subscribe(x => 
-                            { 
-                                this.ViewModel.CurrentPage = x;
-                            }));
-
+                          .Subscribe(x => { this.ViewModel.CurrentPage = x; }));
 
             this.subscription = subscription;
         }

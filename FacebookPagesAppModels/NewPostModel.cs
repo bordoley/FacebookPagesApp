@@ -7,10 +7,10 @@ namespace FacebookPagesApp
 {
     public interface INewPostViewModel : INavigableViewModel, IServiceViewModel
     {
-        bool ShouldPublishPost { set; }
+        IRxProperty<bool> ShouldPublishPost { get; }
         IRxProperty<DateTime> PublishDate { get; }
         IRxProperty<TimeSpan> PublishTime { get; }
-        string PostContent { set; }
+        IRxProperty<string> PostContent { get; }
 
         IRxCommand PublishPost { get; }
     }
@@ -37,9 +37,9 @@ namespace FacebookPagesApp
         {
         }
 
-        bool INewPostViewModel.ShouldPublishPost
+        IRxProperty<bool> INewPostViewModel.ShouldPublishPost
         {
-            set { _shouldPublishPost.Value = value; }
+            get { return _shouldPublishPost; }
         }
 
         IObservable<bool> INewPostControllerModel.ShouldPublishPost
@@ -67,16 +67,15 @@ namespace FacebookPagesApp
             get { return this._publishTime; }
         }
 
-        string INewPostViewModel.PostContent
+        IRxProperty<string> INewPostViewModel.PostContent
         {
-            set { _postContent.Value = value; }
+            get { return _postContent; }
         }
 
         IObservable<string> INewPostControllerModel.PostContent
         {
             get { return _postContent; }
         }
-
 
         IRxCommand INewPostViewModel.PublishPost { get { return _publishPost; } }
 

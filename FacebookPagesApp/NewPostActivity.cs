@@ -105,33 +105,31 @@ namespace FacebookPagesApp
             var subscription = new CompositeDisposable();
 
             subscription.Add(
-                Observable.FromEventPattern<CompoundButton.CheckedChangeEventArgs>(shouldPublishPost, "CheckedChange").Select(x => x.EventArgs.IsChecked).Subscribe(x =>
-                    {
-                        this.ViewModel.ShouldPublishPost = x;
-                    }));
-
+                this.ViewModel.ShouldPublishPost.Bind(shouldPublishPost));
 
             subscription.Add(
                 Observable.FromEventPattern(showDatePicker, "Click")
                     .SelectMany(_ => Task.FromResult(DateTime.Now))
-                    .ObserveOnMainThread()
                     .Subscribe(date => { this.ViewModel.PublishDate.Value = date; }));
 
             subscription.Add(
                 // FIxME: format the date pretty
-                this.ViewModel.PublishDate.Select(x => x.ToString()).Subscribe(x => this.showDatePicker.Text = x));
-
+                this.ViewModel.PublishDate.Select(x => x.ToString()).BindTo(this.showDatePicker));
 
             subscription.Add(
                 Observable.FromEventPattern(showTimePicker, "Click")
                     .SelectMany(_ => Task.FromResult(new TimeSpan())) //CalendarHelpers.PickTime(this.SupportFragmentManager, this.ViewModel.PublishTime))
-                    .ObserveOnMainThread() 
                     .Subscribe(time => { this.ViewModel.PublishTime.Value = time; }));
 
             subscription.Add(
                 // FIxME: format the date pretty
-                this.ViewModel.PublishTime.Select(x => x.ToString()).Subscribe(x => this.showTimePicker.Text = x));
-                
+                this.ViewModel.PublishTime.Select(x => x.ToString()).BindTo(this.showTimePicker));
+
+            subscription.Add(
+                Observable.FromEventPattern(this.postContent, "AfterTextChanged")
+                          .Throttle(TimeSpan.FromSeconds(.5))
+                          .Subscribe(_ => { this.ViewModel.PostContent.Value = postContent.Text; }));
+
             this.subscription = subscription;
         }
 
@@ -146,8 +144,6 @@ namespace FacebookPagesApp
             switch (item.ItemId)
             {
                 case Resource.Id.new_post_action_bar_post:
-                    // late bind the text to avoid lots of strings copies
-                    this.ViewModel.PostContent = postContent.Text;
                     this.ViewModel.PublishPost.Execute();
                     break;
             }

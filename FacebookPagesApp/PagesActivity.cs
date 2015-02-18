@@ -106,6 +106,12 @@ namespace FacebookPagesApp
                         return firstVisibleItem + visibleItemCount >= (totalItemCount - 4);
                     }).InvokeCommand(this.ViewModel.LoadMorePosts));
 
+            subscription.Add(
+                this.ViewModel.Posts.BindTo(
+                    posts, 
+                    (parent) => new TextView(parent.Context),
+                    (viewModel, view) => { view.Text = viewModel.message; }));
+
             this.subscription = subscription;
         }
 

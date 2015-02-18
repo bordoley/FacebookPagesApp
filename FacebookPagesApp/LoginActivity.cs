@@ -45,30 +45,33 @@ namespace FacebookPagesApp
 
             var subscription = new CompositeDisposable();
 
-            // FIXME: RXApp will support a simpler binding syntax
             subscription.Add(this.ViewModel.Login.Bind(this.authButton));
 
             subscription.Add(
-                this.ViewModel.LoginFailed.Subscribe(_ =>
-                    Toast.MakeText(
-                        this, 
-                        this.Resources.GetString(Resource.String.login_failed), 
-                        ToastLength.Long).Show())); 
+                this.ViewModel.LoginFailed
+                    .ObserveOnMainThread()
+                    .Subscribe(_ =>
+                        Toast.MakeText(
+                            this, 
+                            this.Resources.GetString(Resource.String.login_failed), 
+                            ToastLength.Long).Show())); 
 
             subscription.Add(
-                this.ViewModel.NetworkAvailable.Subscribe(networkAvailable =>
-                    {
-                        if (networkAvailable)
+                this.ViewModel.NetworkAvailable
+                    .ObserveOnMainThread()
+                    .Subscribe(networkAvailable =>
                         {
-                            networkUnavailableMessage.Visibility = ViewStates.Gone;
-                            authButton.Visibility = ViewStates.Visible;
-                        }
-                        else
-                        {
-                            networkUnavailableMessage.Visibility = ViewStates.Visible;
-                            authButton.Visibility = ViewStates.Gone;
-                        }
-                    }));
+                            if (networkAvailable)
+                            {
+                                networkUnavailableMessage.Visibility = ViewStates.Gone;
+                                authButton.Visibility = ViewStates.Visible;
+                            }
+                            else
+                            {
+                                networkUnavailableMessage.Visibility = ViewStates.Visible;
+                                authButton.Visibility = ViewStates.Gone;
+                            }
+                        }));
 
             this.subscription = subscription;
         }

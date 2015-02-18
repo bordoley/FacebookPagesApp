@@ -43,7 +43,6 @@ namespace FacebookPagesApp
             userName = FindViewById<TextView>(Resource.Id.user_name);
             profilePicture = this.FindViewById<ImageView>(Resource.Id.user_profile_picture);
             showUnpublishedPosts = this.FindViewById<Switch>(Resource.Id.show_unpublished);
-
             userpages = this.FindViewById<ListView>(Resource.Id.user_pages);
 
             var drawerLayout = this.FindViewById<DrawerLayout> (Resource.Id.drawer_layout);
@@ -63,7 +62,9 @@ namespace FacebookPagesApp
             subscription.Add(this.ViewModel.UserName.BindTo(this.userName));
 
             subscription.Add(
-                this.ViewModel.ProfilePhoto.Where(x => x != null).Subscribe(bitmap =>
+                this.ViewModel.ProfilePhoto.Where(x => x != null)
+                    .ObserveOnMainThread()
+                    .Subscribe(bitmap =>
                     {
                         profilePicture.SetMinimumHeight((int)bitmap.Height);
                         profilePicture.SetImageDrawable (bitmap.ToNative());
@@ -84,8 +85,7 @@ namespace FacebookPagesApp
                             {
                                 var pages = await this.ViewModel.Pages.FirstAsync();
                                 return pages.ElementAtOrDefault(x);
-                            }).Subscribe(x => { 
-                                this.ViewModel.CurrentPage = x; }));
+                            }).Subscribe(x => { this.ViewModel.CurrentPage = x; }));
 
             this.subscription = subscription;
         }

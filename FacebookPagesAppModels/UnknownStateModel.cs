@@ -11,7 +11,7 @@ namespace FacebookPagesApp
     {
     }
 
-    public class UnknownStateModel : MobileModel, IUnknownStateViewModel, IUnknownStateControllerModel
+    public sealed class UnknownStateModel : MobileModel, IUnknownStateViewModel, IUnknownStateControllerModel
     {
         public UnknownStateModel()
         {

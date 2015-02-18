@@ -60,7 +60,7 @@ namespace FacebookPagesApp
         IObservable<Unit> RefreshPosts { get; }
     }
 
-    public class PagesModel : MobileModel, IPagesViewModel, IPagesControllerModel
+    public sealed class PagesModel : MobileModel, IPagesViewModel, IPagesControllerModel
     { 
         private readonly IRxProperty<PersistentVector<FacebookAPI.Post>> _posts = 
             RxProperty.Create(PersistentVector<FacebookAPI.Post>.Empty());

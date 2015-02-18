@@ -14,12 +14,17 @@ using Splat;
 
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 
 namespace FacebookPagesApp
 {
     [Activity(Label="Page")]    
-    public sealed class PagesActivity : RxActivity<IPagesViewModel>
+    public sealed class PagesActivity : RxActivity<IPagesViewModel>, AbsListView.IOnScrollListener
     {
+        // FIXME: Ideally I'd like to add this directly to RxApp.Android in a friendly way. Maybe ObservableListView. 
+        // It's hard though do to all the constructors and crazy inheritance patterns.
+        private readonly Subject<Tuple<AbsListView, int, int, int>> onScroll = new Subject<Tuple<AbsListView, int, int, int>>();
+
         private IDisposable subscription = null;
 
         private SwipeRefreshLayout refresher;
@@ -28,6 +33,7 @@ namespace FacebookPagesApp
         private ImageView profilePicture;
         private Switch showUnpublishedPosts;
         private ListView userpages;
+        private ListView posts;
 
         public PagesActivity()
         {
@@ -44,6 +50,9 @@ namespace FacebookPagesApp
             profilePicture = this.FindViewById<ImageView>(Resource.Id.user_profile_picture);
             showUnpublishedPosts = this.FindViewById<Switch>(Resource.Id.show_unpublished);
             userpages = this.FindViewById<ListView>(Resource.Id.user_pages);
+            posts = this.FindViewById<ListView>(Resource.Id.pages_posts);
+
+            posts.SetOnScrollListener(this);
 
             var drawerLayout = this.FindViewById<DrawerLayout> (Resource.Id.drawer_layout);
             drawerLayout.SetDrawerShadow (Resource.Drawable.drawer_shadow_light, (int)GravityFlags.Start);
@@ -87,6 +96,16 @@ namespace FacebookPagesApp
                                 return pages.ElementAtOrDefault(x);
                             }).Subscribe(x => { this.ViewModel.CurrentPage = x; }));
 
+            subscription.Add(
+                this.onScroll.Where(t =>
+                    {
+                        var firstVisibleItem = t.Item2;
+                        var visibleItemCount = t.Item3;
+                        var totalItemCount = t.Item4;
+
+                        return firstVisibleItem + visibleItemCount >= (totalItemCount - 4);
+                    }).InvokeCommand(this.ViewModel.LoadMorePosts));
+
             this.subscription = subscription;
         }
 
@@ -111,6 +130,16 @@ namespace FacebookPagesApp
         {
             subscription.Dispose();
             base.OnPause();
+        }
+
+        public void OnScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount)
+        {
+            onScroll.OnNext(Tuple.Create(view, firstVisibleItem, visibleItemCount, totalItemCount));
+        }
+
+        public void OnScrollStateChanged(AbsListView view, ScrollState scrollState)
+        {
+            throw new NotImplementedException();
         }
     }
 }

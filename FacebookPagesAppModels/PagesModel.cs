@@ -19,7 +19,7 @@ namespace FacebookPagesApp
 
         IObservable<IEnumerable<FacebookAPI.Page>> Pages { get; }
 
-        IRxReadOnlyList<object> Posts { get; }
+        //IRxReadOnlyList<object> Posts { get; }
 
         IRxCommand CreatePost { get; }
 
@@ -40,10 +40,9 @@ namespace FacebookPagesApp
 
         IRxProperty<FSharpOption<FacebookAPI.Page>> CurrentPage { get; }
 
-        // Don't make F# code need to know about ReactiveUI
         IObservable<FacebookAPI.Page> LoadPage { get; }
 
-        IRxList<object> Posts { get; }
+        //IRxList<object> Posts { get; }
 
         IObservable<Unit> CreatePost { get; }
 
@@ -55,7 +54,7 @@ namespace FacebookPagesApp
 
     public class PagesModel : MobileModel, IPagesViewModel, IPagesControllerModel
     { 
-        private readonly IRxList<object> _posts = RxList.Create<object>();
+        //private readonly IRxList<object> _posts = RxList.Create<object>();
 
         private readonly IRxCommand _createPost = RxCommand.Create();
         private readonly IRxCommand _logOut = RxCommand.Create();
@@ -112,9 +111,9 @@ namespace FacebookPagesApp
         IRxProperty<IEnumerable<FacebookAPI.Page>> IPagesControllerModel.Pages { get { return _pages; } }
 
 
-        IRxReadOnlyList<object> IPagesViewModel.Posts { get { return _posts.ToRxReadOnlyList(); } }
+        //IRxReadOnlyList<object> IPagesViewModel.Posts { get { return _posts.ToRxReadOnlyList(); } }
 
-        IRxList<object> IPagesControllerModel.Posts { get { return _posts; } }
+        //IRxList<object> IPagesControllerModel.Posts { get { return _posts; } }
 
 
         IRxCommand IPagesViewModel.CreatePost { get { return _createPost; } }

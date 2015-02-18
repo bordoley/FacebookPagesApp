@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using Android.App;
 using Android.Content;
@@ -43,11 +45,6 @@ namespace FacebookPagesApp
             showUnpublishedPosts = this.FindViewById<Switch>(Resource.Id.show_unpublished);
 
             userpages = this.FindViewById<ListView>(Resource.Id.user_pages);
-            var adapter = this.ViewModel.Pages.GetAdapter(
-                    (viewModel, parent) => new TextView(parent.Context),
-                    (viewModel, view) => { view.Text = viewModel.name; });
-
-            userpages.Adapter = adapter;
 
             var drawerLayout = this.FindViewById<DrawerLayout> (Resource.Id.drawer_layout);
             drawerLayout.SetDrawerShadow (Resource.Drawable.drawer_shadow_light, (int)GravityFlags.Start);
@@ -73,11 +70,22 @@ namespace FacebookPagesApp
                     }));
 
             subscription.Add(this.ViewModel.ShowUnpublishedPosts.Bind(this.showUnpublishedPosts));
-             
+
             subscription.Add(
-                Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")
-                          .Select(x => this.ViewModel.Pages[x.EventArgs.Position])
-                          .Subscribe(x => { this.ViewModel.CurrentPage = x; }));
+                this.ViewModel.Pages.BindTo(
+                    userpages, 
+                    (parent) => new TextView(parent.Context),
+                    (viewModel, view) => { view.Text = viewModel.name; }));
+            
+            subscription.Add(
+                    Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")
+                          .Select(x => x.EventArgs.Position)
+                          .SelectMany(async x => 
+                            {
+                                var pages = await this.ViewModel.Pages.FirstAsync();
+                                return pages.ElementAtOrDefault(x);
+                            }).Subscribe(x => { 
+                                this.ViewModel.CurrentPage = x; }));
 
             this.subscription = subscription;
         }

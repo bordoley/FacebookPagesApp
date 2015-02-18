@@ -73,6 +73,8 @@ namespace FacebookPagesApp
         }
     }*/
 
+
+
     [Activity(Label = "NewPostActivity")]			
     public class NewPostActivity : RxActivity<INewPostViewModel>
     {

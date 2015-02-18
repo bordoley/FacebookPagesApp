@@ -79,8 +79,7 @@ module ApplicationController =
             let! pages = facebookClient.ListPages
             match pages with
             | Choice1Of2 pages -> 
-                // FIXME: Need to support AddRange on IRxList
-                pages |> Seq.iter vm.Pages.Add
+                vm.Pages.Value <- pages :> seq<FacebookAPI.Page>
                 match pages with 
                 | head :: _ -> vm.CurrentPage.Value <- Some head
                 | _ -> ()

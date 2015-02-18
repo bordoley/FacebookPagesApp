@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 using RxApp;
 using Splat;
@@ -16,7 +17,7 @@ namespace FacebookPagesApp
 
         FacebookAPI.Page CurrentPage { set; }
 
-        IRxReadOnlyList<FacebookAPI.Page> Pages { get; }
+        IObservable<IEnumerable<FacebookAPI.Page>> Pages { get; }
 
         IRxReadOnlyList<object> Posts { get; }
 
@@ -35,7 +36,7 @@ namespace FacebookPagesApp
 
         IObservable<bool> ShowUnpublishedPosts { get; }
 
-        IRxList<FacebookAPI.Page> Pages { get; }
+        IRxProperty<IEnumerable<FacebookAPI.Page>> Pages { get; }
 
         IRxProperty<FSharpOption<FacebookAPI.Page>> CurrentPage { get; }
 
@@ -53,13 +54,15 @@ namespace FacebookPagesApp
     }
 
     public class PagesModel : MobileModel, IPagesViewModel, IPagesControllerModel
-    {
-        private readonly IRxList<FacebookAPI.Page> _pages = RxList.Create<FacebookAPI.Page>();
+    { 
         private readonly IRxList<object> _posts = RxList.Create<object>();
 
         private readonly IRxCommand _createPost = RxCommand.Create();
         private readonly IRxCommand _logOut = RxCommand.Create();
         private readonly IRxCommand _refreshPosts;
+
+        private readonly IRxProperty<IEnumerable<FacebookAPI.Page>> _pages = 
+            RxProperty.Create((IEnumerable<FacebookAPI.Page>) new List<FacebookAPI.Page>());
 
         private readonly IRxProperty<bool> _refreshingPosts = RxProperty.Create(false);
         private readonly IRxProperty<bool> _showUnpublishedPosts =  RxProperty.Create<bool>(false);
@@ -104,9 +107,9 @@ namespace FacebookPagesApp
         }
 
 
-        IRxReadOnlyList<FacebookAPI.Page> IPagesViewModel.Pages { get { return _pages.ToRxReadOnlyList(); } }
+        IObservable<IEnumerable<FacebookAPI.Page>> IPagesViewModel.Pages { get { return _pages; } }
 
-        IRxList<FacebookAPI.Page> IPagesControllerModel.Pages { get { return _pages; } }
+        IRxProperty<IEnumerable<FacebookAPI.Page>> IPagesControllerModel.Pages { get { return _pages; } }
 
 
         IRxReadOnlyList<object> IPagesViewModel.Posts { get { return _posts.ToRxReadOnlyList(); } }

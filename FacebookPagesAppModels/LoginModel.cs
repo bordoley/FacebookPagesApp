@@ -16,8 +16,8 @@ namespace FacebookPagesApp
     {
         IRxCommand LoginFailed { get; }
         IObservable<Unit> Login { get; }
-        bool CanLogin { set; }
-        bool NetworkAvailable { set; }
+        IRxProperty<bool> CanLogin { get; }
+        IRxProperty<bool> NetworkAvailable { get; }
     }
 
     public sealed class LoginModel : MobileModel, ILoginViewModel, ILoginControllerModel
@@ -49,10 +49,10 @@ namespace FacebookPagesApp
 
         IObservable<bool> ILoginViewModel.NetworkAvailable { get { return _networkAvailable; } }
 
-        bool ILoginControllerModel.NetworkAvailable { set { _networkAvailable.Value = value; } }
+        IRxProperty<bool> ILoginControllerModel.NetworkAvailable { get { return _networkAvailable; } }
 
 
-        bool ILoginControllerModel.CanLogin { set { _canLogin.Value = value; } }
+        IRxProperty<bool> ILoginControllerModel.CanLogin { get { return _canLogin; } }
     }
 }
 

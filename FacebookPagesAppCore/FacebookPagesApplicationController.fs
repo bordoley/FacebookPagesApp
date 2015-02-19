@@ -18,7 +18,7 @@ module ApplicationController =
 
         let setCanLogin value =
             canLogin := value
-            vm.CanLogin <- value
+            vm.CanLogin.Value <- value
 
         let doLogin () = async { 
             setCanLogin false
@@ -59,7 +59,7 @@ module ApplicationController =
             let! profilePhoto = facebookClient.ProfilePhoto
             match profilePhoto with
             | Choice1Of2 bitmap -> 
-                vm.ProfilePhoto <- bitmap
+                vm.ProfilePhoto.Value <- bitmap
             | _ ->()
         } |> Async.StartImmediate
 
@@ -69,7 +69,7 @@ module ApplicationController =
             let! userInfo = facebookClient.UserInfo
             match userInfo with
             | Choice1Of2 userInfo -> 
-                vm.UserName <- userInfo.firstName 
+                vm.UserName.Value <- userInfo.firstName 
             | _ ->()
         } |> Async.StartImmediate
 
@@ -90,7 +90,7 @@ module ApplicationController =
         let retval = new CompositeDisposable()
         retval.Add (vm.CreatePost |> Observable.subscribe (fun _ -> navStack.Push (NewPostModel())))
         retval.Add (vm.LogOut |> Observable.subscribe(fun _ -> sessionManager.Logout |> Async.StartImmediate))
-        retval.Add (vm.LoadPage |> Observable.
+        //retval.Add (vm.LoadPage |> Observable.
 
         retval :> IDisposable
 

@@ -16,6 +16,8 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
+using Microsoft.FSharp.Core;
+
 namespace FacebookPagesApp
 {
     [Activity(Label="Page")]    
@@ -90,11 +92,9 @@ namespace FacebookPagesApp
             subscription.Add(
                     Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")
                           .Select(x => x.EventArgs.Position)
-                          .SelectMany(async x => 
-                            {
-                                var pages = await this.ViewModel.Pages.FirstAsync();
-                                return pages.ElementAtOrDefault(x);
-                            }).BindTo(this.ViewModel.CurrentPage));
+                          .Combine(this.ViewModel.Pages)
+                          .Select(t => FSharpOption<FacebookAPI.Page>.Some(t.Item2.ElementAt(t.Item1)))
+                          .BindTo(this.ViewModel.CurrentPage)); 
 
             subscription.Add(
                 this.onScroll.Where(t =>

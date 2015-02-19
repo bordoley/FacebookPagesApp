@@ -16,7 +16,7 @@ namespace FacebookPagesApp
         IObservable<IBitmap> ProfilePhoto { get; }
         IRxProperty<bool> ShowUnpublishedPosts { get; }
 
-        FacebookAPI.Page CurrentPage { set; }
+        IRxProperty<FSharpOption<FacebookAPI.Page>> CurrentPage { get; }
 
         IObservable<IEnumerable<FacebookAPI.Page>> Pages { get; }
 
@@ -34,9 +34,9 @@ namespace FacebookPagesApp
 
     public interface IPagesControllerModel : INavigableControllerModel, IServiceControllerModel
     {
-        string UserName { set; }
+        IRxProperty<string> UserName { get; }
 
-        IBitmap ProfilePhoto { set; }
+        IRxProperty<IBitmap> ProfilePhoto { get; }
 
         IObservable<bool> ShowUnpublishedPosts { get; }
 
@@ -53,10 +53,10 @@ namespace FacebookPagesApp
 
         IRxProperty<PersistentVector<FacebookAPI.Post>> Posts { get; }
        
-        bool CanLoadMorePosts { set; }
+        IRxProperty<bool> CanLoadMorePosts { get; }
         IObservable<Unit> LoadMorePosts { get; }
 
-        bool CanRefreshPosts { set; }
+        IRxProperty<bool> CanRefreshPosts { get; }
         IObservable<Unit> RefreshPosts { get; }
     }
 
@@ -99,20 +99,16 @@ namespace FacebookPagesApp
 
         IObservable<string> IPagesViewModel.UserName { get { return _userName; } }
 
-        string IPagesControllerModel.UserName { set { _userName.Value = value; } }
+        IRxProperty<string> IPagesControllerModel.UserName { get { return _userName; } }
 
 
         IObservable<IBitmap> IPagesViewModel.ProfilePhoto { get { return _profilePhoto; } }
 
-        IBitmap IPagesControllerModel.ProfilePhoto { set { _profilePhoto.Value = value; } }
+        IRxProperty<IBitmap> IPagesControllerModel.ProfilePhoto { get { return _profilePhoto; } }
 
 
-        FacebookAPI.Page IPagesViewModel.CurrentPage { set { _currentPage.Value = FSharpOption<FacebookAPI.Page>.Some(value); } }
+        public IRxProperty<FSharpOption<FacebookAPI.Page>> CurrentPage { get { return _currentPage; } }
 
-        IRxProperty<FSharpOption<FacebookAPI.Page>> IPagesControllerModel.CurrentPage 
-        { 
-            get { return _currentPage; } 
-        }
 
         IObservable<FacebookAPI.Page> IPagesControllerModel.LoadPage 
         { 
@@ -140,14 +136,14 @@ namespace FacebookPagesApp
 
         IObservable<Unit> IPagesControllerModel.RefreshPosts { get { return _refreshPosts; } }
 
-        bool IPagesControllerModel.CanRefreshPosts { set { _canRefreshPosts.Value = value; } }
+        IRxProperty<bool> IPagesControllerModel.CanRefreshPosts { get { return _canRefreshPosts; } }
 
 
         IRxCommand IPagesViewModel.LoadMorePosts { get { return _loadMorePosts; } }
 
         IObservable<Unit> IPagesControllerModel.LoadMorePosts { get { return _loadMorePosts; } }
 
-        bool IPagesControllerModel.CanLoadMorePosts { set { _canLoadMorePosts.Value = value; } }
+        IRxProperty<bool> IPagesControllerModel.CanLoadMorePosts { get { return _canLoadMorePosts; } }
 
 
         IObservable<IReadOnlyList<FacebookAPI.Post>> IPagesViewModel.Posts

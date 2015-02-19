@@ -89,6 +89,7 @@ namespace FacebookPagesApp
                                 this.ViewModel.CurrentPage.Value = FSharpOption<FacebookAPI.Page>.Some(x[0]);
                             }
                         })
+                    .ObserveOnMainThread()
                     .BindTo(
                         userpages, 
                         (parent) => new TextView(parent.Context),

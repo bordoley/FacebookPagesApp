@@ -66,6 +66,14 @@ module ApplicationController =
             vm.LogOut |> Observable.subscribe (fun _ -> 
                 sessionManager.Logout |> Async.StartImmediate),
 
+            vm.CreatePost
+                |> Observable.bind (fun _ -> Observables.Combine(vm.CurrentPage, vm.Pages))
+                |> Observable.filter (fun (currentPage, _) -> Option.isSome currentPage)
+                |> Observable.map (fun (currentPage, pages) -> (currentPage.Value, pages))
+                |> Observable.map (fun (currentPage, pages) ->  
+                    new NewPostModel(pages,  currentPage) :> INavigableControllerModel)
+                |> Observable.subscribe (fun x -> navStack.Push x),
+
             // First load of the data
             Observables.Combine(vm.CurrentPage, vm.ShowUnpublishedPosts)
                 // FIXME: Try to grab the requestLock otherwise abandon
@@ -186,9 +194,10 @@ module ApplicationController =
             let post = { id = ""; message = content; createdTime = publishDateTime }
             { post = post; page = page; shouldPublish = shouldPublish }) 
         |> Observable.iter (fun _ -> ()) // Send Facebook the post
-        |> Observable.iter (fun _ -> ()) 
+        |> Observable.observeOnContext SynchronizationContext.Current
         // Check the result, if exception pop up error and set canpublish true otherwise pop the viewmodel
-        |> Observable.subscribe (fun _ -> ())
+        |> Observable.subscribe (fun _ -> 
+            navStack.Pop ())
 
     let create (navStack:INavigationStack) (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream, Stream>) = 
         let subscription : IDisposable ref= ref null                                         

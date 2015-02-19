@@ -26,6 +26,7 @@ namespace FacebookPagesApp
         // FIXME: Ideally I'd like to add this directly to RxApp.Android in a friendly way. Maybe ObservableListView. 
         // It's hard though do to all the constructors and crazy inheritance patterns.
         private readonly Subject<Tuple<AbsListView, int, int, int>> onScroll = new Subject<Tuple<AbsListView, int, int, int>>();
+        private readonly Subject<ScrollState> onScrollState = new Subject<ScrollState>();
 
         private IDisposable subscription = null;
 
@@ -105,14 +106,19 @@ namespace FacebookPagesApp
                       .Select(t => FSharpOption<FacebookAPI.Page>.Some(t.Item2[t.Item1]))
                       .BindTo(this.ViewModel.CurrentPage), 
 
-                this.onScroll.Where(t =>
+                Observables.Combine(this.onScroll, this.onScrollState)
+                    .Where(t =>
                     {
-                        var firstVisibleItem = t.Item2;
-                        var visibleItemCount = t.Item3;
-                        var totalItemCount = t.Item4;
+                        var firstVisibleItem = t.Item1.Item2;
+                        var visibleItemCount = t.Item1.Item3;
+                        var totalItemCount = t.Item1.Item4;
 
-                        //if (totalItemCount > 4)
-                        //return firstVisibleItem + visibleItemCount >= (totalItemCount - 4);
+                        var scrollState = t.Item2;
+
+                        if ((totalItemCount > 4) && (scrollState != ScrollState.Idle))
+                        {
+                            return firstVisibleItem + visibleItemCount >= (totalItemCount - 4);
+                        }
 
                         // Issue is who caused the scroll?
                         return false;
@@ -154,7 +160,7 @@ namespace FacebookPagesApp
 
         public void OnScrollStateChanged(AbsListView view, ScrollState scrollState)
         {
-            
+            onScrollState.OnNext(scrollState);
         }
     }
 }

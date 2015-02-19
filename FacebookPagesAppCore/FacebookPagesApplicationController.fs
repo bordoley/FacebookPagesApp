@@ -127,12 +127,14 @@ module ApplicationController =
                 // FIXME: There is a race condition if the user changes the page or the show unpublished posts at this point
                 // To address it we should pass in a cancellation token to cancel the request at this point
                 // and abandon the transaction
-                |> Observable.map (fun _ -> ())
+                |> Observable.map (fun x -> x)
 
                 // Check the result. If data provided publish it to the view model
                 // otherwise pop up an error message unless it was caused by cancellation
-                |> Observable.map (fun _ -> 
-                    vm.Posts.Value <- PersistentVector.empty
+                |> Observable.map (fun (_, _, posts) ->       
+                    vm.Posts.Value <- 
+                        PersistentVector.append posts (PersistentVector.ofSeq [{ id = ""; message = sprintf "hi mom %s" (DateTime.Now.ToString()); createdTime = DateTime.Now }]) 
+
                     ())
 
                 // Unblock trying to load more or refresh

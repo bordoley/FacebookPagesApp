@@ -108,7 +108,7 @@ namespace FacebookPagesApp
                 this.ViewModel.ShouldPublishPost.Bind(shouldPublishPost),
 
                 Observable.FromEventPattern(showDatePicker, "Click")
-                    .SelectMany(_ => Task.FromResult(DateTime.Now))
+                    .SelectMany(_ => Task.FromResult(DateTime.Now)) //CalendarHelpers.PickDate(this.SupportFragmentManager, this.ViewModel.PublishTime))
                     .BindTo(this.ViewModel.PublishDate),
 
                 // FIxME: format the date pretty
@@ -124,7 +124,11 @@ namespace FacebookPagesApp
                 Observable.FromEventPattern(this.postContent, "AfterTextChanged")
                           .Throttle(TimeSpan.FromSeconds(.5))
                           .Select(x => postContent.Text)
-                          .BindTo(this.ViewModel.PostContent)
+                          .BindTo(this.ViewModel.PostContent),
+
+                this.OptionsItemSelected
+                    .Where(item => item.ItemId == Resource.Id.new_post_action_bar_post)
+                    .InvokeCommand(this.ViewModel.PublishPost)
             );
         }
 
@@ -132,17 +136,6 @@ namespace FacebookPagesApp
         {
             MenuInflater.Inflate (Resource.Menu.NewPostActionBarMenu, menu);       
             return base.OnCreateOptionsMenu(menu);
-        }
-
-        public override bool OnOptionsItemSelected(IMenuItem item)
-        {
-            switch (item.ItemId)
-            {
-                case Resource.Id.new_post_action_bar_post:
-                    this.ViewModel.PublishPost.Execute();
-                    break;
-            }
-            return base.OnOptionsItemSelected(item);
         }
             
         protected override void OnPause()

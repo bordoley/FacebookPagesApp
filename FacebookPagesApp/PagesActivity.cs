@@ -104,7 +104,11 @@ namespace FacebookPagesApp
                 this.ViewModel.Posts.BindTo(
                     posts, 
                     (parent) => new TextView(parent.Context),
-                    (viewModel, view) => { view.Text = viewModel.message; })
+                    (viewModel, view) => { view.Text = viewModel.message; }),
+
+                this.OptionsItemSelected
+                    .Where(item => item.ItemId == Resource.Id.pages_action_bar_new_post)
+                    .InvokeCommand(this.ViewModel.CreatePost)
             );
         }
 
@@ -114,16 +118,7 @@ namespace FacebookPagesApp
             return base.OnCreateOptionsMenu(menu);
         }
 
-        public override bool OnOptionsItemSelected(IMenuItem item)
-        {
-            switch (item.ItemId)
-            {
-                case Resource.Id.pages_action_bar_new_post:
-                    this.ViewModel.CreatePost.Execute();
-                    break;
-            }
-            return base.OnOptionsItemSelected(item);
-        }
+
 
         protected override void OnPause()
         {

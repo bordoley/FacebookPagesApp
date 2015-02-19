@@ -69,7 +69,7 @@ namespace FacebookPagesApp
 
                 this.ViewModel.LogOut.Bind(this.logoutButton),   
 
-                this.ViewModel.UserName.BindTo(this.userName),
+                this.ViewModel.UserName.BindTo(this.userName, x => x.Text),
 
                 this.ViewModel.ProfilePhoto.Where(x => x != null)
                     .ObserveOnMainThread()

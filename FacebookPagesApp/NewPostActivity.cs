@@ -112,14 +112,14 @@ namespace FacebookPagesApp
                     .BindTo(this.ViewModel.PublishDate),
 
                 // FIxME: format the date pretty
-                this.ViewModel.PublishDate.Select(x => x.ToString()).BindTo(this.showDatePicker),
+                this.ViewModel.PublishDate.Select(x => x.ToString()).BindTo(this.showDatePicker, x => x.Text),
 
                 Observable.FromEventPattern(showTimePicker, "Click")
                     .SelectMany(_ => Task.FromResult(new TimeSpan())) //CalendarHelpers.PickTime(this.SupportFragmentManager, this.ViewModel.PublishTime))
                     .BindTo(this.ViewModel.PublishTime),
 
                 // FIxME: format the date pretty
-                this.ViewModel.PublishTime.Select(x => x.ToString()).BindTo(this.showTimePicker),
+                this.ViewModel.PublishTime.Select(x => x.ToString()).BindTo(this.showTimePicker, x => x.Text),
 
                 Observable.FromEventPattern(this.postContent, "AfterTextChanged")
                           .Throttle(TimeSpan.FromSeconds(.5))

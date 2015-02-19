@@ -64,39 +64,34 @@ namespace FacebookPagesApp
         {
             base.OnResume();
 
-            var subscription = new CompositeDisposable();
+            subscription = Disposables.Combine(
+                this.ViewModel.RefeshPosts.Bind(refresher),
 
-            subscription.Add(this.ViewModel.RefeshPosts.Bind(refresher));
-                
-            subscription.Add(this.ViewModel.LogOut.Bind(this.logoutButton));   
+                this.ViewModel.LogOut.Bind(this.logoutButton),   
 
-            subscription.Add(this.ViewModel.UserName.BindTo(this.userName));
+                this.ViewModel.UserName.BindTo(this.userName),
 
-            subscription.Add(
                 this.ViewModel.ProfilePhoto.Where(x => x != null)
                     .ObserveOnMainThread()
                     .Subscribe(bitmap =>
                     {
-                        profilePicture.SetMinimumHeight((int)bitmap.Height);
-                        profilePicture.SetImageDrawable (bitmap.ToNative());
-                    }));
+                      profilePicture.SetMinimumHeight((int)bitmap.Height);
+                      profilePicture.SetImageDrawable(bitmap.ToNative());
+                    }),
 
-            subscription.Add(this.ViewModel.ShowUnpublishedPosts.Bind(this.showUnpublishedPosts));
+                this.ViewModel.ShowUnpublishedPosts.Bind(this.showUnpublishedPosts),
 
-            subscription.Add(
                 this.ViewModel.Pages.BindTo(
                     userpages, 
                     (parent) => new TextView(parent.Context),
-                    (viewModel, view) => { view.Text = viewModel.name; }));
-            
-            subscription.Add(
-                    Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")
-                          .Select(x => x.EventArgs.Position)
-                          .Combine(this.ViewModel.Pages)
-                          .Select(t => FSharpOption<FacebookAPI.Page>.Some(t.Item2.ElementAt(t.Item1)))
-                          .BindTo(this.ViewModel.CurrentPage)); 
+                    (viewModel, view) => { view.Text = viewModel.name; }),
 
-            subscription.Add(
+                Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")
+                      .Select(x => x.EventArgs.Position)
+                      .Combine(this.ViewModel.Pages)
+                      .Select(t => FSharpOption<FacebookAPI.Page>.Some(t.Item2.ElementAt(t.Item1)))
+                      .BindTo(this.ViewModel.CurrentPage), 
+
                 this.onScroll.Where(t =>
                     {
                         var firstVisibleItem = t.Item2;
@@ -104,15 +99,13 @@ namespace FacebookPagesApp
                         var totalItemCount = t.Item4;
 
                         return firstVisibleItem + visibleItemCount >= (totalItemCount - 4);
-                    }).InvokeCommand(this.ViewModel.LoadMorePosts));
+                    }).InvokeCommand(this.ViewModel.LoadMorePosts),
 
-            subscription.Add(
                 this.ViewModel.Posts.BindTo(
                     posts, 
                     (parent) => new TextView(parent.Context),
-                    (viewModel, view) => { view.Text = viewModel.message; }));
-
-            this.subscription = subscription;
+                    (viewModel, view) => { view.Text = viewModel.message; })
+            );
         }
 
         public override bool OnCreateOptionsMenu (IMenu menu)

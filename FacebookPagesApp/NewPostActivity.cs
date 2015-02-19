@@ -104,37 +104,28 @@ namespace FacebookPagesApp
         {
             base.OnResume();
 
-            var subscription = new CompositeDisposable();
-
-            subscription.Add(
-                this.ViewModel.ShouldPublishPost.Bind(shouldPublishPost));
-
-            subscription.Add(
+            this.subscription = Disposables.Combine(
+                this.ViewModel.ShouldPublishPost.Bind(shouldPublishPost),
 
                 Observable.FromEventPattern(showDatePicker, "Click")
                     .SelectMany(_ => Task.FromResult(DateTime.Now))
-                    .BindTo(this.ViewModel.PublishDate));
+                    .BindTo(this.ViewModel.PublishDate),
 
-            subscription.Add(
                 // FIxME: format the date pretty
-                this.ViewModel.PublishDate.Select(x => x.ToString()).BindTo(this.showDatePicker));
+                this.ViewModel.PublishDate.Select(x => x.ToString()).BindTo(this.showDatePicker),
 
-            subscription.Add(
                 Observable.FromEventPattern(showTimePicker, "Click")
                     .SelectMany(_ => Task.FromResult(new TimeSpan())) //CalendarHelpers.PickTime(this.SupportFragmentManager, this.ViewModel.PublishTime))
-                    .BindTo(this.ViewModel.PublishTime));
+                    .BindTo(this.ViewModel.PublishTime),
 
-            subscription.Add(
                 // FIxME: format the date pretty
-                this.ViewModel.PublishTime.Select(x => x.ToString()).BindTo(this.showTimePicker));
+                this.ViewModel.PublishTime.Select(x => x.ToString()).BindTo(this.showTimePicker),
 
-            subscription.Add(
                 Observable.FromEventPattern(this.postContent, "AfterTextChanged")
                           .Throttle(TimeSpan.FromSeconds(.5))
                           .Select(x => postContent.Text)
-                          .BindTo(this.ViewModel.PostContent));
-
-            this.subscription = subscription;
+                          .BindTo(this.ViewModel.PostContent)
+            );
         }
 
         public override bool OnCreateOptionsMenu (IMenu menu)

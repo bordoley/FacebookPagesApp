@@ -43,37 +43,25 @@ namespace FacebookPagesApp
 
             LoginActivity._current = this;
 
-            var subscription = new CompositeDisposable();
+            this.subscription = Disposables.Combine(
+                this.ViewModel.Login.Bind(this.authButton),
 
-            subscription.Add(this.ViewModel.Login.Bind(this.authButton));
-
-            subscription.Add(
                 this.ViewModel.LoginFailed
                     .ObserveOnMainThread()
                     .Subscribe(_ =>
                         Toast.MakeText(
                             this, 
                             this.Resources.GetString(Resource.String.login_failed), 
-                            ToastLength.Long).Show())); 
+                            ToastLength.Long).Show()),
 
-            subscription.Add(
                 this.ViewModel.NetworkAvailable
-                    .ObserveOnMainThread()
-                    .Subscribe(networkAvailable =>
-                        {
-                            if (networkAvailable)
-                            {
-                                networkUnavailableMessage.Visibility = ViewStates.Gone;
-                                authButton.Visibility = ViewStates.Visible;
-                            }
-                            else
-                            {
-                                networkUnavailableMessage.Visibility = ViewStates.Visible;
-                                authButton.Visibility = ViewStates.Gone;
-                            }
-                        }));
+                              .Select(x => x ? ViewStates.Gone : ViewStates.Visible)
+                              .BindTo(networkUnavailableMessage, x => x.Visibility),
 
-            this.subscription = subscription;
+                this.ViewModel.NetworkAvailable
+                              .Select(x => x ? ViewStates.Visible : ViewStates.Gone)
+                              .BindTo(authButton, x => x.Visibility)
+            );
         }
 
         protected override void OnPause()

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using Android.App;
 using Android.Content;
@@ -7,18 +9,24 @@ using Android.Views;
 using Android.Widget;
 using Android.Support.V4.Widget;
 
-using ReactiveUI;
 using RxApp;
 using Splat;
 
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
+
+using Microsoft.FSharp.Core;
 
 namespace FacebookPagesApp
 {
     [Activity(Label="Page")]    
-    public class PagesActivity : RxActivity<IPagesViewModel>
+    public sealed class PagesActivity : RxActivity<IPagesViewModel>, AbsListView.IOnScrollListener
     {
+        // FIXME: Ideally I'd like to add this directly to RxApp.Android in a friendly way. Maybe ObservableListView. 
+        // It's hard though do to all the constructors and crazy inheritance patterns.
+        private readonly Subject<Tuple<AbsListView, int, int, int>> onScroll = new Subject<Tuple<AbsListView, int, int, int>>();
+
         private IDisposable subscription = null;
 
         private SwipeRefreshLayout refresher;
@@ -27,6 +35,7 @@ namespace FacebookPagesApp
         private ImageView profilePicture;
         private Switch showUnpublishedPosts;
         private ListView userpages;
+        private ListView posts;
 
         public PagesActivity()
         {
@@ -42,18 +51,10 @@ namespace FacebookPagesApp
             userName = FindViewById<TextView>(Resource.Id.user_name);
             profilePicture = this.FindViewById<ImageView>(Resource.Id.user_profile_picture);
             showUnpublishedPosts = this.FindViewById<Switch>(Resource.Id.show_unpublished);
-
             userpages = this.FindViewById<ListView>(Resource.Id.user_pages);
-            var adapter = 
-                new ReactiveListAdapter<FacebookAPI.Page>(
-                    this.ViewModel.Pages,
-                    (viewModel, parent) =>
-                        {
-                            var view = new TextView(parent.Context);
-                            view.Text = viewModel.name;
-                            return view;
-                        });
-            userpages.Adapter = adapter;
+            posts = this.FindViewById<ListView>(Resource.Id.pages_posts);
+
+            posts.SetOnScrollListener(this);
 
             var drawerLayout = this.FindViewById<DrawerLayout> (Resource.Id.drawer_layout);
             drawerLayout.SetDrawerShadow (Resource.Drawable.drawer_shadow_light, (int)GravityFlags.Start);
@@ -63,45 +64,61 @@ namespace FacebookPagesApp
         {
             base.OnResume();
 
-            var subscription = new CompositeDisposable();
+            subscription = Disposables.Combine(
+                this.ViewModel.RefeshPosts.Bind(refresher),
 
-            subscription.Add(
-                Observable.FromEventPattern(refresher, "Refresh").Subscribe(_ => 
-                    this.ViewModel.RefeshPosts.Execute(null)));
+                this.ViewModel.LogOut.Bind(this.logoutButton),   
 
-            subscription.Add(
-                this.WhenAnyValue(x => x.ViewModel.RefreshingPosts).Where(x => !x).Subscribe(_ => 
-                    refresher.Refreshing = false));
+                this.ViewModel.UserName.BindTo(this.userName, x => x.Text),
 
-            subscription.Add(
-                this.BindCommand(this.ViewModel, vm => vm.LogOut, view => view.logoutButton));
-
-            subscription.Add(
-                this.WhenAnyValue(x => x.ViewModel.UserName).Subscribe(x => this.userName.Text = x));
-
-            subscription.Add(
-                this.WhenAnyValue(x => x.ViewModel.ProfilePhoto).Where(x => x != null).Subscribe(bitmap =>
+                this.ViewModel.ProfilePhoto.Where(x => x != null)
+                    .ObserveOnMainThread()
+                    .Subscribe(bitmap =>
                     {
-                        profilePicture.SetMinimumHeight((int)bitmap.Height);
-                        profilePicture.SetImageDrawable (bitmap.ToNative());
-                    }));
+                      profilePicture.SetMinimumHeight((int)bitmap.Height);
+                      profilePicture.SetImageDrawable(bitmap.ToNative());
+                    }),
 
-            subscription.Add(
-                Observable.FromEventPattern<CompoundButton.CheckedChangeEventArgs>(showUnpublishedPosts, "CheckedChange").Select(x => x.EventArgs.IsChecked).Subscribe(x =>
-                    {
-                        this.ViewModel.ShowUnpublishedPosts = x;
-                    }));
-             
-            subscription.Add(
+                this.ViewModel.ShowUnpublishedPosts.Bind(this.showUnpublishedPosts),
+
+                this.ViewModel.Pages
+                    .Do(x =>
+                        {
+                            if (x.Count > 0)
+                            {
+                                this.ViewModel.CurrentPage.Value = FSharpOption<FacebookAPI.Page>.Some(x[0]);
+                            }
+                        })
+                    .BindTo(
+                        userpages, 
+                        (parent) => new TextView(parent.Context),
+                        (viewModel, view) => { view.Text = viewModel.name; }),
+
                 Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")
-                          .Select(x => this.ViewModel.Pages[x.EventArgs.Position])
-                          .Subscribe(x => 
-                            { 
-                                this.ViewModel.CurrentPage = x;
-                            }));
+                      .Select(x => x.EventArgs.Position)
+                      .Combine(this.ViewModel.Pages)
+                      .Select(t => FSharpOption<FacebookAPI.Page>.Some(t.Item2[t.Item1]))
+                      .BindTo(this.ViewModel.CurrentPage), 
 
+                this.onScroll.Where(t =>
+                    {
+                        var firstVisibleItem = t.Item2;
+                        var visibleItemCount = t.Item3;
+                        var totalItemCount = t.Item4;
 
-            this.subscription = subscription;
+                        return firstVisibleItem + visibleItemCount >= (totalItemCount - 4);
+                    }).InvokeCommand(this.ViewModel.LoadMorePosts),
+
+                this.ViewModel.Posts
+                    .BindTo(
+                        posts, 
+                        (parent) => new TextView(parent.Context),
+                        (viewModel, view) => { view.Text = viewModel.message; }),
+
+                this.OptionsItemSelected
+                    .Where(item => item.ItemId == Resource.Id.pages_action_bar_new_post)
+                    .InvokeCommand(this.ViewModel.CreatePost)
+            );
         }
 
         public override bool OnCreateOptionsMenu (IMenu menu)
@@ -110,22 +127,20 @@ namespace FacebookPagesApp
             return base.OnCreateOptionsMenu(menu);
         }
 
-        public override bool OnOptionsItemSelected(IMenuItem item)
-        {
-            switch (item.ItemId)
-            {
-                case Resource.Id.pages_action_bar_new_post:
-                    this.ViewModel.CreatePost.Execute(null);
-                    break;
-            }
-            return base.OnOptionsItemSelected(item);
-        }
-
         protected override void OnPause()
         {
             subscription.Dispose();
             base.OnPause();
         }
+
+        public void OnScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount)
+        {
+            onScroll.OnNext(Tuple.Create(view, firstVisibleItem, visibleItemCount, totalItemCount));
+        }
+
+        public void OnScrollStateChanged(AbsListView view, ScrollState scrollState)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
-

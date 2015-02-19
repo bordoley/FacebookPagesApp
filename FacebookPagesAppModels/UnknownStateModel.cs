@@ -1,5 +1,4 @@
 ﻿using System;
-using ReactiveUI;
 using RxApp;
 
 namespace FacebookPagesApp
@@ -12,7 +11,7 @@ namespace FacebookPagesApp
     {
     }
 
-    public class UnknownStateModel : MobileModel, IUnknownStateViewModel, IUnknownStateControllerModel
+    public sealed class UnknownStateModel : MobileModel, IUnknownStateViewModel, IUnknownStateControllerModel
     {
         public UnknownStateModel()
         {

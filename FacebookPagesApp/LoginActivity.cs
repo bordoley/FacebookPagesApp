@@ -7,13 +7,12 @@ using Android.Widget;
 using System;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using ReactiveUI;
 using RxApp;
 
 namespace FacebookPagesApp
 {
     [Activity(Theme = "@style/LoginTheme", Label = "Pages Login")]    
-    public class LoginActivity : RxActivity<ILoginViewModel>
+    public sealed class LoginActivity : RxActivity<ILoginViewModel>
     {
         // This is very, very evil, but it works reliably and allows the rest of the code to pretend
         // that activities don't matter.
@@ -44,37 +43,25 @@ namespace FacebookPagesApp
 
             LoginActivity._current = this;
 
-            var subscription = new CompositeDisposable();
+            this.subscription = Disposables.Combine(
+                this.ViewModel.Login.Bind(this.authButton),
 
-            subscription.Add(
-                this.BindCommand(
-                    this.ViewModel, 
-                    vm => vm.Login,
-                    view => view.authButton));
+                this.ViewModel.LoginFailed
+                    .ObserveOnMainThread()
+                    .Subscribe(_ =>
+                        Toast.MakeText(
+                            this, 
+                            this.Resources.GetString(Resource.String.login_failed), 
+                            ToastLength.Long).Show()),
 
-            subscription.Add(
-                this.WhenAnyObservable(x => x.ViewModel.LoginFailed).Subscribe(_ =>
-                    Toast.MakeText(
-                        this, 
-                        this.Resources.GetString(Resource.String.login_failed), 
-                        ToastLength.Long).Show())); 
+                this.ViewModel.NetworkAvailable
+                              .Select(x => x ? ViewStates.Gone : ViewStates.Visible)
+                              .BindTo(networkUnavailableMessage, x => x.Visibility),
 
-            subscription.Add(
-                this.WhenAnyValue(x => x.ViewModel.NetworkAvailable).Subscribe(networkAvailable =>
-                    {
-                        if (networkAvailable)
-                        {
-                            networkUnavailableMessage.Visibility = ViewStates.Gone;
-                            authButton.Visibility = ViewStates.Visible;
-                        }
-                        else
-                        {
-                            networkUnavailableMessage.Visibility = ViewStates.Visible;
-                            authButton.Visibility = ViewStates.Gone;
-                        }
-                    }));
-
-            this.subscription = subscription;
+                this.ViewModel.NetworkAvailable
+                              .Select(x => x ? ViewStates.Visible : ViewStates.Gone)
+                              .BindTo(authButton, x => x.Visibility)
+            );
         }
 
         protected override void OnPause()

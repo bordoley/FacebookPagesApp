@@ -16,3 +16,9 @@ type Post = {
         message:string
         createdTime:DateTime
     }
+
+type CreatePostData = {
+        post:Post
+        page:Page
+        shouldPublish:bool
+    }

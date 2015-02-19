@@ -8,7 +8,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 
-using ReactiveUI;
 using RxApp;
 
 using System.Reactive.Disposables;
@@ -74,8 +73,10 @@ namespace FacebookPagesApp
         }
     }*/
 
+
+
     [Activity(Label = "NewPostActivity")]			
-    public class NewPostActivity : RxActivity<INewPostViewModel>
+    public sealed class NewPostActivity : RxActivity<INewPostViewModel>
     {
         private IDisposable subscription = null;
 
@@ -103,65 +104,38 @@ namespace FacebookPagesApp
         {
             base.OnResume();
 
-            var subscription = new CompositeDisposable();
+            this.subscription = Disposables.Combine(
+                this.ViewModel.ShouldPublishPost.Bind(shouldPublishPost),
 
-            subscription.Add(
-                Observable.FromEventPattern<CompoundButton.CheckedChangeEventArgs>(shouldPublishPost, "CheckedChange").Select(x => x.EventArgs.IsChecked).Subscribe(x =>
-                    {
-                        this.ViewModel.ShouldPublishPost = x;
-                    }));
-
-
-            subscription.Add(
                 Observable.FromEventPattern(showDatePicker, "Click")
-                    .SelectMany(_ => Task.FromResult(DateTime.Now))
-                    //.SelectMany(_ => CalendarHelpers.PickDate(this.SupportFragmentManager, this.ViewModel.PublishDate))
-                    // For some reason the CB is getting scheduled on the thread pool.
-                    .ObserveOn(ReactiveUI.RxApp.MainThreadScheduler) 
-                    .Subscribe(date =>
-                        {
-                            this.ViewModel.PublishDate = date;
-                        }));
+                    .SelectMany(_ => Task.FromResult(DateTime.Now)) //CalendarHelpers.PickDate(this.SupportFragmentManager, this.ViewModel.PublishTime))
+                    .BindTo(this.ViewModel.PublishDate),
 
-            subscription.Add(
                 // FIxME: format the date pretty
-                this.WhenAnyValue(x => x.ViewModel.PublishDate).Select(x => x.ToString()).Subscribe(x => this.showDatePicker.Text = x));
+                this.ViewModel.PublishDate.Select(x => x.ToString()).BindTo(this.showDatePicker, x => x.Text),
 
-
-            subscription.Add(
                 Observable.FromEventPattern(showTimePicker, "Click")
                     .SelectMany(_ => Task.FromResult(new TimeSpan())) //CalendarHelpers.PickTime(this.SupportFragmentManager, this.ViewModel.PublishTime))
-                    // For some reason the CB is getting scheduled on the thread pool.
-                    .ObserveOn(ReactiveUI.RxApp.MainThreadScheduler) 
-                    .Subscribe(time =>
-                        {
-                            this.ViewModel.PublishTime = time;
-                        }));
+                    .BindTo(this.ViewModel.PublishTime),
 
-            subscription.Add(
                 // FIxME: format the date pretty
-                this.WhenAnyValue(x => x.ViewModel.PublishTime).Select(x => x.ToString()).Subscribe(x => this.showTimePicker.Text = x));
-                
-            this.subscription = subscription;
+                this.ViewModel.PublishTime.Select(x => x.ToString()).BindTo(this.showTimePicker, x => x.Text),
+
+                Observable.FromEventPattern(this.postContent, "AfterTextChanged")
+                          .Throttle(TimeSpan.FromSeconds(.5))
+                          .Select(x => postContent.Text)
+                          .BindTo(this.ViewModel.PostContent),
+
+                this.OptionsItemSelected
+                    .Where(item => item.ItemId == Resource.Id.new_post_action_bar_post)
+                    .InvokeCommand(this.ViewModel.PublishPost)
+            );
         }
 
         public override bool OnCreateOptionsMenu (IMenu menu)
         {
             MenuInflater.Inflate (Resource.Menu.NewPostActionBarMenu, menu);       
             return base.OnCreateOptionsMenu(menu);
-        }
-
-        public override bool OnOptionsItemSelected(IMenuItem item)
-        {
-            switch (item.ItemId)
-            {
-                case Resource.Id.new_post_action_bar_post:
-                    // late bind the text to avoid lots of strings copies
-                    this.ViewModel.PostContent = postContent.Text;
-                    this.ViewModel.PublishPost.Execute(null);
-                    break;
-            }
-            return base.OnOptionsItemSelected(item);
         }
             
         protected override void OnPause()

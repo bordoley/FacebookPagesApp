@@ -55,9 +55,6 @@
     <Reference Include="Splat">
       <HintPath>..\packages\Splat.1.6.1\lib\monoandroid\Splat.dll</HintPath>
     </Reference>
-    <Reference Include="ReactiveUI">
-      <HintPath>..\packages\reactiveui-core.6.4.0.1\lib\MonoAndroid\ReactiveUI.dll</HintPath>
-    </Reference>
     <Reference Include="FSharp.Core" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
@@ -78,6 +75,10 @@
     <ProjectReference Include="..\FacebookAPI\FacebookAPI.fsproj">
       <Project>{56788434-5447-4299-B0B9-2161406E3EEE}</Project>
       <Name>FacebookAPI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FSharpxPersistentVector\FSharpxPersistentVector.fsproj">
+      <Project>{A8716D8A-87D5-4495-90BE-F9DA0670FAF3}</Project>
+      <Name>FSharpxPersistentVector</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

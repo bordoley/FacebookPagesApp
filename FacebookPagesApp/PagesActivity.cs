@@ -118,8 +118,6 @@ namespace FacebookPagesApp
             return base.OnCreateOptionsMenu(menu);
         }
 
-
-
         protected override void OnPause()
         {
             subscription.Dispose();
@@ -137,4 +135,3 @@ namespace FacebookPagesApp
         }
     }
 }
-

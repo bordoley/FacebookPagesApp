@@ -74,11 +74,14 @@ module ApplicationController =
                 |> Observable.filter (fun (currentPage, _) -> Option.isSome currentPage)
                 |> Observable.map (fun (currentPage, showUnpublishedPosts) -> (currentPage.Value, showUnpublishedPosts))
 
+                // Throttle a second
+                |> Observable.throttle (TimeSpan(0,0,1))
+
                 // Clear the posts, and prevent the user from trying to refresh or load more
                 |> Observable.iter (fun _ -> 
                     vm.CanLoadMorePosts.Value <- false
                     vm.CanRefreshPosts.Value <- false
-                    vm.Pages.Value <- PersistentVector.empty)
+                    vm.Posts.Value <- PersistentVector.empty)
 
                 // Load the data
                 // Fixme: If the user switches pages or toggles show unpublished
@@ -126,8 +129,8 @@ module ApplicationController =
 
                 // Unblock trying to load more or refresh
                 |> Observable.iter (fun _ -> 
-                    vm.CanLoadMorePosts.Value <- false
-                    vm.CanRefreshPosts.Value <- false)
+                    vm.CanLoadMorePosts.Value <- true
+                    vm.CanRefreshPosts.Value <- true)
 
                 // FIXME: Release the AsyncLock
 
@@ -160,8 +163,8 @@ module ApplicationController =
 
                 // Unblock trying to load more or refresh
                 |> Observable.iter (fun _ -> 
-                    vm.CanLoadMorePosts.Value <- false
-                    vm.CanRefreshPosts.Value <- false)
+                    vm.CanLoadMorePosts.Value <- true
+                    vm.CanRefreshPosts.Value <- true)
 
                 // FIXME: Release the AsyncLock
 
@@ -196,6 +199,7 @@ module ApplicationController =
 
                 subscription :=
                     sessionState 
+                    |> Observable.observeOnContext SynchronizationContext.Current
                     |> Observable.map (function
                         // FIXME: Add factories that make this less painful
                         | LoggedIn -> PagesModel() :> INavigableControllerModel

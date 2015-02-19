@@ -98,6 +98,10 @@
       <Project>{56788434-5447-4299-B0B9-2161406E3EEE}</Project>
       <Name>FacebookAPI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FSharpxPersistentVector\FSharpxPersistentVector.fsproj">
+      <Project>{A8716D8A-87D5-4495-90BE-F9DA0670FAF3}</Project>
+      <Name>FSharpxPersistentVector</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

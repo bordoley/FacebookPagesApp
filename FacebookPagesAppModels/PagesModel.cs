@@ -13,17 +13,18 @@ namespace FacebookPagesApp
     public interface IPagesViewModel : INavigableViewModel, IServiceViewModel
     {
         IObservable<string> UserName { get; }
+
         IObservable<IBitmap> ProfilePhoto { get; }
+
         IRxProperty<bool> ShowUnpublishedPosts { get; }
 
         IRxProperty<FSharpOption<FacebookAPI.Page>> CurrentPage { get; }
 
-        IObservable<IEnumerable<FacebookAPI.Page>> Pages { get; }
+        IObservable<IReadOnlyList<FacebookAPI.Page>> Pages { get; }
 
         IRxCommand CreatePost { get; }
 
         IRxCommand LogOut { get; }
-
 
         IObservable<IReadOnlyList<FacebookAPI.Post>> Posts { get; }
 
@@ -40,19 +41,16 @@ namespace FacebookPagesApp
 
         IObservable<bool> ShowUnpublishedPosts { get; }
 
-        IRxProperty<IEnumerable<FacebookAPI.Page>> Pages { get; }
+        IObservable<FSharpOption<FacebookAPI.Page>> CurrentPage { get; }
 
-        IRxProperty<FSharpOption<FacebookAPI.Page>> CurrentPage { get; }
-
-        IObservable<FacebookAPI.Page> LoadPage { get; }
+        IRxProperty<IReadOnlyList<FacebookAPI.Page>> Pages { get; }
 
         IObservable<Unit> CreatePost { get; }
 
         IObservable<Unit> LogOut { get; }
 
-
         IRxProperty<PersistentVector<FacebookAPI.Post>> Posts { get; }
-       
+
         IRxProperty<bool> CanLoadMorePosts { get; }
         IObservable<Unit> LoadMorePosts { get; }
 
@@ -76,8 +74,8 @@ namespace FacebookPagesApp
         private readonly IRxCommand _logOut = RxCommand.Create();
 
 
-        private readonly IRxProperty<IEnumerable<FacebookAPI.Page>> _pages = 
-            RxProperty.Create((IEnumerable<FacebookAPI.Page>) new List<FacebookAPI.Page>());
+        private readonly IRxProperty<IReadOnlyList<FacebookAPI.Page>> _pages = 
+            RxProperty.Create((IReadOnlyList<FacebookAPI.Page>) new List<FacebookAPI.Page>());
 
 
         private readonly IRxProperty<bool> _showUnpublishedPosts =  RxProperty.Create<bool>(false);
@@ -107,18 +105,14 @@ namespace FacebookPagesApp
         IRxProperty<IBitmap> IPagesControllerModel.ProfilePhoto { get { return _profilePhoto; } }
 
 
-        public IRxProperty<FSharpOption<FacebookAPI.Page>> CurrentPage { get { return _currentPage; } }
+        IRxProperty<FSharpOption<FacebookAPI.Page>> IPagesViewModel.CurrentPage { get { return _currentPage; } }
+
+        IObservable<FSharpOption<FacebookAPI.Page>> IPagesControllerModel.CurrentPage { get { return _currentPage; } }
 
 
-        IObservable<FacebookAPI.Page> IPagesControllerModel.LoadPage 
-        { 
-            get { return this._currentPage.Where(x => OptionModule.IsSome(x)).Select(x => x.Value); } 
-        }
+        IObservable<IReadOnlyList<FacebookAPI.Page>> IPagesViewModel.Pages { get { return _pages; } }
 
-
-        IObservable<IEnumerable<FacebookAPI.Page>> IPagesViewModel.Pages { get { return _pages; } }
-
-        IRxProperty<IEnumerable<FacebookAPI.Page>> IPagesControllerModel.Pages { get { return _pages; } }
+        IRxProperty<IReadOnlyList<FacebookAPI.Page>> IPagesControllerModel.Pages { get { return _pages; } }
 
 
         IRxCommand IPagesViewModel.CreatePost { get { return _createPost; } }

@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime" />
+    <Reference Include="System.Threading.Tasks" />
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
     <Reference Include="Mono.Android" />
@@ -63,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Observable.fs" />
+    <Compile Include="AsyncHelpers.fs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using RxApp;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -11,6 +12,9 @@ namespace FacebookPagesApp
         IRxProperty<DateTime> PublishDate { get; }
         IRxProperty<TimeSpan> PublishTime { get; }
         IRxProperty<string> PostContent { get; }
+        IRxProperty<FacebookAPI.Page> Page { get; }
+
+        IObservable<IReadOnlyList<FacebookAPI.Page>> Pages { get; }
 
         IRxCommand PublishPost { get; }
     }
@@ -21,20 +25,30 @@ namespace FacebookPagesApp
         IObservable<DateTime> PublishDate { get; }
         IObservable<TimeSpan> PublishTime { get; }
         IObservable<string> PostContent { get; }
+        IObservable<FacebookAPI.Page> Page { get; }
+
         IObservable<Unit> PublishPost { get; }
+        IRxProperty<bool> CanPublishPost { get; }
     }
 
     public sealed class NewPostModel : MobileModel, INewPostViewModel, INewPostControllerModel
     {
-        private readonly IRxProperty<bool> _shouldPublishPost = RxProperty.Create<bool>(true);
-        private readonly IRxProperty<DateTime> _publishDate = RxProperty.Create<DateTime>(DateTime.Now);
-        private readonly IRxProperty<TimeSpan> _publishTime = RxProperty.Create<TimeSpan>(new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, 0));
+        private readonly IRxProperty<bool> _shouldPublishPost = RxProperty.Create(true);
+        private readonly IRxProperty<DateTime> _publishDate = RxProperty.Create(DateTime.Now);
+        private readonly IRxProperty<TimeSpan> _publishTime = RxProperty.Create(new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, 0));
         private readonly IRxProperty<string> _postContent = RxProperty.Create<string>("");
+        private readonly IRxProperty<FacebookAPI.Page> _page;
 
+        private readonly IObservable<IReadOnlyList<FacebookAPI.Page>> _pages;
+
+        private readonly IRxProperty<bool> _canPublishPost = RxProperty.Create(true);
         private readonly IRxCommand _publishPost = RxCommand.Create();
 
-        public NewPostModel()
+        public NewPostModel(IReadOnlyList<FacebookAPI.Page> pages, FacebookAPI.Page defaultPage)
         {
+            _pages = Observable.Return(pages);
+            _page = RxProperty.Create(defaultPage);
+            _publishPost = _canPublishPost.ToCommand();
         }
 
         IRxProperty<bool> INewPostViewModel.ShouldPublishPost
@@ -77,7 +91,23 @@ namespace FacebookPagesApp
             get { return _postContent; }
         }
 
+        IObservable<FacebookAPI.Page> INewPostControllerModel.Page
+        {
+            get { return _page; }
+        }
+
+        IRxProperty<FacebookAPI.Page> INewPostViewModel.Page
+        {
+            get { return _page; }
+        }
+
+        IObservable<IReadOnlyList<FacebookAPI.Page>> INewPostViewModel.Pages
+        {
+            get { return _pages; }
+        }
+
         IRxCommand INewPostViewModel.PublishPost { get { return _publishPost; } }
+        IRxProperty<bool> INewPostControllerModel.CanPublishPost { get { return _canPublishPost; } }
 
         IObservable<Unit> INewPostControllerModel.PublishPost { get { return _publishPost; } }
     }

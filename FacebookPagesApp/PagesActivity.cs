@@ -81,15 +81,23 @@ namespace FacebookPagesApp
 
                 this.ViewModel.ShowUnpublishedPosts.Bind(this.showUnpublishedPosts),
 
-                this.ViewModel.Pages.BindTo(
-                    userpages, 
-                    (parent) => new TextView(parent.Context),
-                    (viewModel, view) => { view.Text = viewModel.name; }),
+                this.ViewModel.Pages
+                    .Do(x =>
+                        {
+                            if (x.Count > 0)
+                            {
+                                this.ViewModel.CurrentPage.Value = FSharpOption<FacebookAPI.Page>.Some(x[0]);
+                            }
+                        })
+                    .BindTo(
+                        userpages, 
+                        (parent) => new TextView(parent.Context),
+                        (viewModel, view) => { view.Text = viewModel.name; }),
 
                 Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")
                       .Select(x => x.EventArgs.Position)
                       .Combine(this.ViewModel.Pages)
-                      .Select(t => FSharpOption<FacebookAPI.Page>.Some(t.Item2.ElementAt(t.Item1)))
+                      .Select(t => FSharpOption<FacebookAPI.Page>.Some(t.Item2[t.Item1]))
                       .BindTo(this.ViewModel.CurrentPage), 
 
                 this.onScroll.Where(t =>
@@ -101,10 +109,11 @@ namespace FacebookPagesApp
                         return firstVisibleItem + visibleItemCount >= (totalItemCount - 4);
                     }).InvokeCommand(this.ViewModel.LoadMorePosts),
 
-                this.ViewModel.Posts.BindTo(
-                    posts, 
-                    (parent) => new TextView(parent.Context),
-                    (viewModel, view) => { view.Text = viewModel.message; }),
+                this.ViewModel.Posts
+                    .BindTo(
+                        posts, 
+                        (parent) => new TextView(parent.Context),
+                        (viewModel, view) => { view.Text = viewModel.message; }),
 
                 this.OptionsItemSelected
                     .Where(item => item.ItemId == Resource.Id.pages_action_bar_new_post)

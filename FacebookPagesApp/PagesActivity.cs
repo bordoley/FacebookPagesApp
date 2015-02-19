@@ -64,9 +64,13 @@ namespace FacebookPagesApp
         {
             base.OnResume();
 
-            subscription = Disposables.Combine(
-                this.ViewModel.RefeshPosts.Bind(refresher),
-
+            subscription = Disposables.Combine(         
+                Observable.FromEventPattern(refresher, "Refresh")
+                    .Where(_ => 
+                        // FIXME: Thist events regardless of who set the state to refreshing (app vs. user)
+                        refresher.Refreshing)
+                    .InvokeCommand(this.ViewModel.RefeshPosts),
+            
                 this.ViewModel.LogOut.Bind(this.logoutButton),   
 
                 this.ViewModel.UserName.BindTo(this.userName, x => x.Text),
@@ -82,6 +86,7 @@ namespace FacebookPagesApp
                 this.ViewModel.ShowUnpublishedPosts.Bind(this.showUnpublishedPosts),
 
                 this.ViewModel.Pages
+                    .ObserveOnMainThread()
                     .Do(x =>
                         {
                             if (x.Count > 0)
@@ -89,7 +94,6 @@ namespace FacebookPagesApp
                                 this.ViewModel.CurrentPage.Value = FSharpOption<FacebookAPI.Page>.Some(x[0]);
                             }
                         })
-                    .ObserveOnMainThread()
                     .BindTo(
                         userpages, 
                         (parent) => new TextView(parent.Context),
@@ -107,10 +111,19 @@ namespace FacebookPagesApp
                         var visibleItemCount = t.Item3;
                         var totalItemCount = t.Item4;
 
-                        return firstVisibleItem + visibleItemCount >= (totalItemCount - 4);
-                    }).InvokeCommand(this.ViewModel.LoadMorePosts),
+                        //if (totalItemCount > 4)
+                        //return firstVisibleItem + visibleItemCount >= (totalItemCount - 4);
+
+                        // Issue is who caused the scroll?
+                        return false;
+                    })
+                    .InvokeCommand(this.ViewModel.LoadMorePosts),
 
                 this.ViewModel.Posts
+                    .Do(x =>
+                        {
+                            this.refresher.Refreshing = false;
+                        })
                     .BindTo(
                         posts, 
                         (parent) => new TextView(parent.Context),
@@ -141,7 +154,7 @@ namespace FacebookPagesApp
 
         public void OnScrollStateChanged(AbsListView view, ScrollState scrollState)
         {
-            throw new NotImplementedException();
+            
         }
     }
 }

@@ -67,7 +67,7 @@ module ApplicationController =
                 sessionManager.Logout |> Async.StartImmediate),
 
             vm.CreatePost
-                |> Observable.bind (fun _ -> Observables.Combine(vm.CurrentPage, vm.Pages))
+                |> Observable.map (fun _ -> (vm.CurrentPage.FirstAsync().Wait(), vm.Pages.FirstAsync().Wait()))
                 |> Observable.filter (fun (currentPage, _) -> Option.isSome currentPage)
                 |> Observable.map (fun (currentPage, pages) -> (currentPage.Value, pages))
                 |> Observable.map (fun (currentPage, pages) ->  
@@ -88,7 +88,6 @@ module ApplicationController =
                 // Clear the posts, and prevent the user from trying to refresh or load more
                 |> Observable.iter (fun _ -> 
                     vm.CanLoadMorePosts.Value <- false
-                    vm.CanRefreshPosts.Value <- false
                     vm.Posts.Value <- PersistentVector.empty)
 
                 // Load the data
@@ -103,17 +102,17 @@ module ApplicationController =
 
                 // Unblock trying to load more or refresh
                 |> Observable.iter (fun _ -> 
-                    vm.CanLoadMorePosts.Value <- true
-                    vm.CanRefreshPosts.Value <- true)
+                    vm.CanLoadMorePosts.Value <- true)
 
                 // FIXME: Release the AsyncLock
 
                 |> Observable.subscribe (fun _ -> ()),
 
+
             vm.LoadMorePosts
 
                 // Get the current page, whether to show unpublished posts and the current posts being displayed
-                |> Observable.bind (fun _ -> Observables.Combine(vm.CurrentPage, vm.ShowUnpublishedPosts, vm.Posts) |> Observable.first)
+                |> Observable.map (fun _ -> (vm.CurrentPage.FirstAsync().Wait(), vm.ShowUnpublishedPosts.FirstAsync().Wait(), vm.Posts.FirstAsync().Wait()))
                 |> Observable.filter(fun (currentPage, _, _) -> Option.isSome currentPage)
                 |> Observable.map(fun (currentPage, showUnpublishedPosts, posts) -> (currentPage.Value, showUnpublishedPosts, posts))
 
@@ -121,8 +120,7 @@ module ApplicationController =
 
                 // Prevent further requests for data
                 |> Observable.iter (fun _ -> 
-                    vm.CanLoadMorePosts.Value <- false
-                    vm.CanRefreshPosts.Value <- false)
+                    vm.CanLoadMorePosts.Value <- false)
 
 
                 // Go and load the posts
@@ -133,12 +131,13 @@ module ApplicationController =
 
                 // Check the result. If data provided publish it to the view model
                 // otherwise pop up an error message unless it was caused by cancellation
-                |> Observable.map (fun _ -> ())
+                |> Observable.map (fun _ -> 
+                    vm.Posts.Value <- PersistentVector.empty
+                    ())
 
                 // Unblock trying to load more or refresh
                 |> Observable.iter (fun _ -> 
-                    vm.CanLoadMorePosts.Value <- true
-                    vm.CanRefreshPosts.Value <- true)
+                    vm.CanLoadMorePosts.Value <- true)
 
                 // FIXME: Release the AsyncLock
 
@@ -147,39 +146,44 @@ module ApplicationController =
             vm.RefreshPosts
 
                 // Get the current page, whether to show unpublished posts and the current posts being displayed
-                |> Observable.bind (fun _ -> Observables.Combine(vm.CurrentPage, vm.ShowUnpublishedPosts, vm.Posts) |> Observable.first)
-                |> Observable.filter(fun (currentPage, _, _) -> Option.isSome currentPage)
-                |> Observable.map(fun (currentPage, showUnpublishedPosts, posts) -> (currentPage.Value, showUnpublishedPosts, posts))
+                |> Observable.map (fun _ -> 
+                    (vm.CurrentPage.FirstAsync().Wait(), vm.ShowUnpublishedPosts.FirstAsync().Wait(), vm.Posts.FirstAsync().Wait()))
+                |> Observable.filter(fun (currentPage, _, _) -> 
+                    Option.isSome currentPage)
+                |> Observable.map(fun (currentPage, showUnpublishedPosts, posts) -> 
+                    (currentPage.Value, showUnpublishedPosts, posts))
 
 
                 // FIXME: Try to grab the requestLock otherwise abandon
 
                 // Prevent further requests for data
                 |> Observable.iter (fun _ -> 
-                    vm.CanLoadMorePosts.Value <- false
-                    vm.CanRefreshPosts.Value <- false)
+                    vm.CanLoadMorePosts.Value <- false)
 
                 // Go and load the posts
                 // FIXME: There is a race condition if the user changes the page or the show unpublished posts at this point
                 // To address it we should pass in a cancellation token to cancel the request at this point
                 // and abandon the transaction
-                |> Observable.map (fun _ -> ())
+                |> Observable.map (fun x -> x)
 
                 // Check the result. If data provided publish it to the view model
                 // otherwise pop up an error message unless it was caused by cancellation
-                |> Observable.map (fun _ -> ())
+                |> Observable.map (fun (_,_, posts) ->       
+                    vm.Posts.Value <- 
+                        PersistentVector.append (PersistentVector.ofSeq [{ id = ""; message = sprintf "hi mom %s" (DateTime.Now.ToString()); createdTime = DateTime.Now }]) posts 
+
+                    ())
 
                 // Unblock trying to load more or refresh
                 |> Observable.iter (fun _ -> 
-                    vm.CanLoadMorePosts.Value <- true
-                    vm.CanRefreshPosts.Value <- true)
+                    vm.CanLoadMorePosts.Value <- true)
 
                 // FIXME: Release the AsyncLock
 
                 |> Observable.subscribe (fun _ -> ())
         )
 
-    let private newPostController (vm:INewPostControllerModel) (navStack:INavigationStack) =
+    let private newPostController (vm:INewPostControllerModel) =
         Observables.Combine(vm.PublishPost, vm.Page, vm.PublishDate, vm.PublishTime, vm.PostContent, vm.ShouldPublishPost)
         |> Observable.iter (fun _ -> vm.CanPublishPost.Value <- false)
         |> Observable.map (fun (_, page, publishDate, publishTime, content, shouldPublish) ->
@@ -196,8 +200,7 @@ module ApplicationController =
         |> Observable.iter (fun _ -> ()) // Send Facebook the post
         |> Observable.observeOnContext SynchronizationContext.Current
         // Check the result, if exception pop up error and set canpublish true otherwise pop the viewmodel
-        |> Observable.subscribe (fun _ -> 
-            navStack.Pop ())
+        |> Observable.subscribe (fun _ -> vm.Back.Execute())
 
     let create (navStack:INavigationStack) (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream, Stream>) = 
         let subscription : IDisposable ref= ref null                                         
@@ -221,7 +224,7 @@ module ApplicationController =
                 | :? ILoginControllerModel as vm -> loginController vm sessionManager
                 | :? IUnknownStateControllerModel as vm -> Disposable.Empty
                 | :? IPagesControllerModel as vm -> pagesController vm navStack sessionManager httpClient
-                | :? INewPostControllerModel as vm -> newPostController vm navStack
+                | :? INewPostControllerModel as vm -> newPostController vm
                 | _ -> failwith ("Unknown controller model type: " + model.ToString())
 
             member this.Dispose () = 

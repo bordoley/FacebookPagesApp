@@ -54,7 +54,6 @@ namespace FacebookPagesApp
         IRxProperty<bool> CanLoadMorePosts { get; }
         IObservable<Unit> LoadMorePosts { get; }
 
-        IRxProperty<bool> CanRefreshPosts { get; }
         IObservable<Unit> RefreshPosts { get; }
     }
 
@@ -66,8 +65,7 @@ namespace FacebookPagesApp
         private readonly IRxCommand _loadMorePosts;
         private readonly IRxProperty<bool> _canLoadMorePosts = RxProperty.Create(false);
 
-        private readonly IRxCommand _refreshPosts;
-        private readonly IRxProperty<bool> _canRefreshPosts = RxProperty.Create(false);
+        private readonly IRxCommand _refreshPosts = RxCommand.Create();
 
 
         private readonly IRxCommand _createPost = RxCommand.Create();
@@ -86,7 +84,6 @@ namespace FacebookPagesApp
 
         public PagesModel()
         {
-            _refreshPosts = _canRefreshPosts.ToCommand();
             _loadMorePosts = _canLoadMorePosts.ToCommand();
         }
 
@@ -129,8 +126,6 @@ namespace FacebookPagesApp
         IRxCommand IPagesViewModel.RefeshPosts { get { return _refreshPosts; } }
 
         IObservable<Unit> IPagesControllerModel.RefreshPosts { get { return _refreshPosts; } }
-
-        IRxProperty<bool> IPagesControllerModel.CanRefreshPosts { get { return _canRefreshPosts; } }
 
 
         IRxCommand IPagesViewModel.LoadMorePosts { get { return _loadMorePosts; } }

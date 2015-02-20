@@ -125,7 +125,7 @@ module ApplicationController =
                 // Prevent further requests for data
                 |> Observable.iter (fun _ -> 
                     vm.CanLoadMorePosts.Value <- false)
-
+                |> Observable.delay (TimeSpan(0, 0, 5))
 
                 // Go and load the posts
                 // FIXME: There is a race condition if the user changes the page or the show unpublished posts at this point
@@ -164,8 +164,9 @@ module ApplicationController =
 
                 // Prevent further requests for data
                 |> Observable.iter (fun _ -> 
-                    vm.CanLoadMorePosts.Value <- false)
-
+                    vm.CanLoadMorePosts.Value <- false
+                    vm.ShowRefresher.Value <- true)
+               
                 // Go and load the posts
                 // FIXME: There is a race condition if the user changes the page or the show unpublished posts at this point
                 // To address it we should pass in a cancellation token to cancel the request at this point
@@ -182,7 +183,8 @@ module ApplicationController =
 
                 // Unblock trying to load more or refresh
                 |> Observable.iter (fun _ -> 
-                    vm.CanLoadMorePosts.Value <- true)
+                    vm.CanLoadMorePosts.Value <- true
+                    vm.ShowRefresher.Value <- false)
 
                 // FIXME: Release the AsyncLock
 

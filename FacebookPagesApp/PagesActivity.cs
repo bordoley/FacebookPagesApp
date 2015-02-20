@@ -67,13 +67,10 @@ namespace FacebookPagesApp
         {
             base.OnResume();
 
-            subscription = Disposable.Combine(         
-                Observable.FromEventPattern(refresher, "Refresh")
-                    .Where(_ => 
-                        // FIXME: Thist events regardless of who set the state to refreshing (app vs. user)
-                        refresher.Refreshing)
-                    .InvokeCommand(this.ViewModel.RefeshPosts),
-            
+            subscription = Disposable.Combine( 
+                this.ViewModel.ShowRefresher.BindTo(refresher, x => x.Refreshing), 
+                this.ViewModel.RefeshPosts.Bind(refresher), 
+              
                 this.ViewModel.LogOut.Bind(this.logoutButton),   
 
                 this.ViewModel.UserName.BindTo(this.userName, x => x.Text),
@@ -129,10 +126,6 @@ namespace FacebookPagesApp
                     .InvokeCommand(this.ViewModel.LoadMorePosts),
 
                 this.ViewModel.Posts
-                    .Do(x =>
-                        {
-                            this.refresher.Refreshing = false;
-                        })
                     .BindTo(
                         posts, 
                         (parent) => new TextView(parent.Context),

@@ -22,6 +22,8 @@ namespace FacebookPagesApp
 
         IObservable<IReadOnlyList<FacebookAPI.Page>> Pages { get; }
 
+        IObservable<bool> ShowRefresher { get; }
+
         IRxCommand CreatePost { get; }
 
         IRxCommand LogOut { get; }
@@ -45,6 +47,8 @@ namespace FacebookPagesApp
 
         IRxProperty<IReadOnlyList<FacebookAPI.Page>> Pages { get; }
 
+        IRxProperty<bool> ShowRefresher { get; }
+
         IObservable<Unit> CreatePost { get; }
 
         IObservable<Unit> LogOut { get; }
@@ -64,18 +68,16 @@ namespace FacebookPagesApp
 
         private readonly IRxCommand _loadMorePosts;
         private readonly IRxProperty<bool> _canLoadMorePosts = RxProperty.Create(false);
-
-        private readonly IRxCommand _refreshPosts = RxCommand.Create();
-
+        private readonly IRxCommand _refreshPosts;
 
         private readonly IRxCommand _createPost = RxCommand.Create();
         private readonly IRxCommand _logOut = RxCommand.Create();
 
+        private readonly IRxProperty<bool> _showRefresher = RxProperty.Create(false);
 
         private readonly IRxProperty<IReadOnlyList<FacebookAPI.Page>> _pages = 
             RxProperty.Create((IReadOnlyList<FacebookAPI.Page>) new List<FacebookAPI.Page>());
-
-
+        
         private readonly IRxProperty<bool> _showUnpublishedPosts =  RxProperty.Create<bool>(false);
         private readonly IRxProperty<string> _userName = RxProperty.Create<string>("");
         private readonly IRxProperty<IBitmap> _profilePhoto = RxProperty.Create<IBitmap>(null);
@@ -85,6 +87,10 @@ namespace FacebookPagesApp
         public PagesModel()
         {
             _loadMorePosts = _canLoadMorePosts.ToCommand();
+
+            // FIXME: Consider always allowing a pull to refresh
+            // and instead use an async lock to prevent multiple loads of data
+            _refreshPosts = _canLoadMorePosts.ToCommand();
         }
 
         IRxProperty<bool> IPagesViewModel.ShowUnpublishedPosts { get { return _showUnpublishedPosts; } }
@@ -122,7 +128,6 @@ namespace FacebookPagesApp
         IObservable<Unit> IPagesControllerModel.LogOut { get { return _logOut; } }
 
 
-
         IRxCommand IPagesViewModel.RefeshPosts { get { return _refreshPosts; } }
 
         IObservable<Unit> IPagesControllerModel.RefreshPosts { get { return _refreshPosts; } }
@@ -135,15 +140,14 @@ namespace FacebookPagesApp
         IRxProperty<bool> IPagesControllerModel.CanLoadMorePosts { get { return _canLoadMorePosts; } }
 
 
-        IObservable<IReadOnlyList<FacebookAPI.Post>> IPagesViewModel.Posts
-        {
-            get { return this._posts.Select(x => (IReadOnlyList<FacebookAPI.Post>)x); }
-        }
+        IObservable<IReadOnlyList<FacebookAPI.Post>> IPagesViewModel.Posts { get { return this._posts.Select(x => (IReadOnlyList<FacebookAPI.Post>)x); } }
 
-        IRxProperty<PersistentVector<FacebookAPI.Post>> IPagesControllerModel.Posts
-        {
-            get { return this._posts; }
-        }
+        IRxProperty<PersistentVector<FacebookAPI.Post>> IPagesControllerModel.Posts { get { return this._posts; } }
+
+ 
+        IRxProperty<bool> IPagesControllerModel.ShowRefresher { get { return this._showRefresher; } }
+
+        IObservable<bool> IPagesViewModel.ShowRefresher { get { return this._showRefresher; } }
     }
 }
 

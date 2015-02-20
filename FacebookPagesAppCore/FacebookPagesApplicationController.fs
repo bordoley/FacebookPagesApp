@@ -61,8 +61,7 @@ module ApplicationController =
         } |> Async.StartImmediate
       
         //let requestLock
-
-        Disposables.Combine(
+        Disposable.Combine(
             vm.LogOut |> Observable.subscribe (fun _ -> 
                 sessionManager.Logout |> Async.StartImmediate),
 
@@ -75,7 +74,7 @@ module ApplicationController =
                 |> Observable.subscribe (fun x -> navStack.Push x),
 
             // First load of the data
-            Observables.Combine(vm.CurrentPage, vm.ShowUnpublishedPosts)
+            Observable.CombineLatest(vm.CurrentPage, vm.ShowUnpublishedPosts)
                 // Clear the posts, and prevent the user from trying to refresh or load more
                 |> Observable.iter (fun _ -> 
                     vm.CanLoadMorePosts.Value <- false)
@@ -191,7 +190,7 @@ module ApplicationController =
         )
 
     let private newPostController (vm:INewPostControllerModel) =
-        Observables.Combine(vm.PublishPost, vm.Page, vm.PublishDate, vm.PublishTime, vm.PostContent, vm.ShouldPublishPost)
+        Observable.CombineLatest(vm.PublishPost, vm.Page, vm.PublishDate, vm.PublishTime, vm.PostContent, vm.ShouldPublishPost)
         |> Observable.iter (fun _ -> vm.CanPublishPost.Value <- false)
         |> Observable.map (fun (_, page, publishDate, publishTime, content, shouldPublish) ->
             let publishDateTime = 

@@ -9,8 +9,8 @@ using Android.Views;
 using Android.Widget;
 
 using RxApp;
+using RxApp.Android;
 
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
@@ -18,6 +18,8 @@ using System.Threading.Tasks;
 //using BetterPickers.CalendarDatePickers;
 //using BetterPickers.RadialTimePickers;
 using Android.Text;
+
+using Observable = System.Reactive.Linq.Observable;
 
 namespace FacebookPagesApp
 {
@@ -104,7 +106,7 @@ namespace FacebookPagesApp
         {
             base.OnResume();
 
-            this.subscription = Disposables.Combine(
+            this.subscription = Disposable.Combine(
                 this.ViewModel.ShouldPublishPost.Bind(shouldPublishPost),
 
                 Observable.FromEventPattern(showDatePicker, "Click")

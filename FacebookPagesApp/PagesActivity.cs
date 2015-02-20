@@ -10,13 +10,15 @@ using Android.Widget;
 using Android.Support.V4.Widget;
 
 using RxApp;
+using RxApp.Android;
 using Splat;
 
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
 using Microsoft.FSharp.Core;
+
+using Observable = System.Reactive.Linq.Observable;
 
 namespace FacebookPagesApp
 {
@@ -65,7 +67,7 @@ namespace FacebookPagesApp
         {
             base.OnResume();
 
-            subscription = Disposables.Combine(         
+            subscription = Disposable.Combine(         
                 Observable.FromEventPattern(refresher, "Refresh")
                     .Where(_ => 
                         // FIXME: Thist events regardless of who set the state to refreshing (app vs. user)
@@ -102,12 +104,12 @@ namespace FacebookPagesApp
 
                 Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")
                       .Select(x => x.EventArgs.Position)
-                      .Combine(this.ViewModel.Pages)
+                      .CombineLatest(this.ViewModel.Pages)
                       .Select(t => FSharpOption<FacebookAPI.Page>.Some(t.Item2[t.Item1]))
                       .BindTo(this.ViewModel.CurrentPage), 
 
                 // FIXME: need
-                Observables.Combine(this.onScroll, this.onScrollState)
+                RxApp.Observable.CombineLatest(this.onScroll, this.onScrollState)
                     .Where(t =>
                     {
                         var firstVisibleItem = t.Item1.Item2;

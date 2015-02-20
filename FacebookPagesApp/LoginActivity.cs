@@ -5,9 +5,9 @@ using Android.Views;
 using Android.Widget;
 
 using System;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using RxApp;
+using RxApp.Android;
 
 namespace FacebookPagesApp
 {
@@ -43,7 +43,7 @@ namespace FacebookPagesApp
 
             LoginActivity._current = this;
 
-            this.subscription = Disposables.Combine(
+            this.subscription = Disposable.Combine(
                 this.ViewModel.Login.Bind(this.authButton),
 
                 this.ViewModel.LoginFailed

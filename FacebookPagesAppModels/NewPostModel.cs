@@ -4,6 +4,8 @@ using RxApp;
 using System.Reactive;
 using System.Reactive.Linq;
 
+using Observable = System.Reactive.Linq.Observable;
+
 namespace FacebookPagesApp
 {
     public interface INewPostViewModel : INavigableViewModel, IServiceViewModel

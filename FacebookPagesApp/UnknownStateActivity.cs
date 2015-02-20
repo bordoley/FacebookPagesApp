@@ -7,6 +7,7 @@ using Android.Views;
 using Android.Widget;
 
 using RxApp;
+using RxApp.Android;
 
 namespace FacebookPagesApp
 {

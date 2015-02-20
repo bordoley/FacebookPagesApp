@@ -106,6 +106,7 @@ namespace FacebookPagesApp
                       .Select(t => FSharpOption<FacebookAPI.Page>.Some(t.Item2[t.Item1]))
                       .BindTo(this.ViewModel.CurrentPage), 
 
+                // FIXME: need
                 Observables.Combine(this.onScroll, this.onScrollState)
                     .Where(t =>
                     {

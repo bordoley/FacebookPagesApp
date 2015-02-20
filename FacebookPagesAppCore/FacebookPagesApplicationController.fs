@@ -76,6 +76,10 @@ module ApplicationController =
 
             // First load of the data
             Observables.Combine(vm.CurrentPage, vm.ShowUnpublishedPosts)
+                // Clear the posts, and prevent the user from trying to refresh or load more
+                |> Observable.iter (fun _ -> 
+                    vm.CanLoadMorePosts.Value <- false)
+
                 // FIXME: Try to grab the requestLock otherwise abandon
 
                 // Nothing to do if the current page is None
@@ -85,10 +89,11 @@ module ApplicationController =
                 // Throttle a second
                 |> Observable.throttle (TimeSpan(0,0,1))
 
-                // Clear the posts, and prevent the user from trying to refresh or load more
-                |> Observable.iter (fun _ -> 
-                    vm.CanLoadMorePosts.Value <- false
-                    vm.Posts.Value <- PersistentVector.empty)
+                |> Observable.iter (fun _ ->
+                    vm.Posts.Value <- 
+                        (PersistentVector.ofSeq [{ id = ""; message = "initial value"; createdTime = DateTime.Now }]) 
+
+                    ())
 
                 // Load the data
                 // Fixme: If the user switches pages or toggles show unpublished
@@ -133,7 +138,7 @@ module ApplicationController =
                 // otherwise pop up an error message unless it was caused by cancellation
                 |> Observable.map (fun (_, _, posts) ->       
                     vm.Posts.Value <- 
-                        PersistentVector.append posts (PersistentVector.ofSeq [{ id = ""; message = sprintf "hi mom %s" (DateTime.Now.ToString()); createdTime = DateTime.Now }]) 
+                        PersistentVector.append posts (PersistentVector.ofSeq [{ id = ""; message = sprintf "load more %s" (DateTime.Now.ToString()); createdTime = DateTime.Now }]) 
 
                     ())
 
@@ -172,7 +177,7 @@ module ApplicationController =
                 // otherwise pop up an error message unless it was caused by cancellation
                 |> Observable.map (fun (_,_, posts) ->       
                     vm.Posts.Value <- 
-                        PersistentVector.append (PersistentVector.ofSeq [{ id = ""; message = sprintf "hi mom %s" (DateTime.Now.ToString()); createdTime = DateTime.Now }]) posts 
+                        PersistentVector.append (PersistentVector.ofSeq [{ id = ""; message = sprintf "refresh %s" (DateTime.Now.ToString()); createdTime = DateTime.Now }]) posts 
 
                     ())
 

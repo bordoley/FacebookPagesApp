@@ -133,6 +133,12 @@
     <AndroidResource Include="Resources\drawable\drawer_shadow_light.9.png" />
     <AndroidResource Include="Resources\menu\NewPostActionBarMenu.xml" />
     <AndroidResource Include="Resources\layout\Pages.axml" />
+    <AndroidResource Include="Resources\drawable\splash.jpg" />
+    <AndroidResource Include="Resources\drawable-hdpi\ic_launcher.png" />
+    <AndroidResource Include="Resources\drawable-mdpi\ic_launcher.png" />
+    <AndroidResource Include="Resources\drawable-xhdpi\ic_launcher.png" />
+    <AndroidResource Include="Resources\drawable-xxhdpi\ic_launcher.png" />
+    <AndroidResource Include="Resources\drawable-xxxhdpi\ic_launcher.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
   <Import Project="packages\SQLitePCL.raw.0.7.2-pre1\build\MonoAndroid\SQLitePCL.raw.targets" Condition="Exists('packages\SQLitePCL.raw.0.7.2-pre1\build\MonoAndroid\SQLitePCL.raw.targets')" />

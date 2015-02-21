@@ -35,12 +35,11 @@ namespace FacebookPagesApp
             throw new Exception("No view for view model");
         }
 
-        public override IApplication ProvideApplication(INavigationStack navigationStack)
+        public override IApplication ProvideApplication()
         {
             var httpClient = FunctionalHttp.Client.HttpClient.FromNetHttpClient(new HttpClient(new NativeMessageHandler()));
 
             return ApplicationController.create(
-                navigationStack,
                 FacebookSession.observe(this.ApplicationContext),
                 FacebookSession.getManagerWithFunc(() => LoginActivity.Current),
                 httpClient);

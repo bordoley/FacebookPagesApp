@@ -7,7 +7,6 @@ open System.Reactive.Linq;
 open System.Reactive.Subjects;
 open RxApp
 open FSharp.Control.Reactive
-open System.Threading
 open FunctionalHttp.Core
 open FunctionalHttp.Client
 open FacebookAPI
@@ -27,7 +26,7 @@ module ApplicationController =
                 vm.CanLogin.Value <- true)
         |> Observable.subscribe (fun _ -> ())
 
-    let private pagesController (vm:IPagesControllerModel) (navStack:INavigationStack) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream,Stream>) =
+    let private pagesController (vm:IPagesControllerModel) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream,Stream>) =
         // FIXME: This is what should be injected
         let facebookClient = FacebookClient(httpClient, fun () -> sessionManager.AccessToken)
 
@@ -72,7 +71,7 @@ module ApplicationController =
                 |> Observable.map (fun (currentPage, pages) -> (currentPage.Value, pages))
                 |> Observable.map (fun (currentPage, pages) ->  
                     new NewPostModel(pages,  currentPage) :> INavigationModel)
-                |> Observable.subscribe (fun x -> navStack.Push x),
+                |> Observable.subscribe (fun x -> vm.Open.Execute(x)),
 
             // First load of the data
             Observable.CombineLatest(vm.CurrentPage, vm.ShowUnpublishedPosts)
@@ -211,33 +210,26 @@ module ApplicationController =
         // Check the result, if exception pop up error and set canpublish true otherwise pop the viewmodel
         |> Observable.subscribe (fun _ -> vm.Back.Execute())
 
-    let create (navStack:INavigationStack) (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream, Stream>) = 
+    let create (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream, Stream>) = 
         let subscription : IDisposable ref= ref null                                         
 
         { new IApplication with
-            member this.Init () =
-                UnknownStateModel() |> navStack.SetRoot
-
-                subscription :=
+            member this.ResetApplicationState 
+                with get () =
                     sessionState 
-
-                    // FIXME: Short term hack. Will be removing the ability to access the nav stack directly soon
-                    |> Observable.observeOnContext SynchronizationContext.Current
+                    // FIXME: Observe on the context so that we for a mainloop hop on every change.
+                    |> Observable.observeOnContext System.Threading.SynchronizationContext.Current
                     |> Observable.map (function
                         // FIXME: Add factories that make this less painful
                         | LoggedIn -> PagesModel() :> INavigationModel
                         | LoggedOut -> LoginModel() :> INavigationModel) 
-                    // FIXME: Update NavStack to make binding easier
-                    |> Observable.subscribe(fun x -> navStack.SetRoot x)
+                    |> Observable.startWith ([UnknownStateModel() :> INavigationModel])
                  
             member this.Bind (model:obj) = 
                 match model with 
                 | :? ILoginControllerModel as vm -> loginController vm sessionManager
                 | :? IUnknownStateControllerModel as vm -> Disposable.Empty
-                | :? IPagesControllerModel as vm -> pagesController vm navStack sessionManager httpClient
+                | :? IPagesControllerModel as vm -> pagesController vm sessionManager httpClient
                 | :? INewPostControllerModel as vm -> newPostController vm sessionManager httpClient
                 | _ -> failwith ("Unknown controller model type: " + model.ToString())
-
-            member this.Dispose () = 
-                (!subscription).Dispose ()
         }

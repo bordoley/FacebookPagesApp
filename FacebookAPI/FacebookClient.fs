@@ -80,10 +80,12 @@ module internal FacebookConverters =
     }
 
     let createPostDataToStream (contentInfo:ContentInfo, data:CreatePostData) = async {
-        //let mediaType = FunctionalHttp.Core.
-        //contentInfo.w
-        ()
+        let mediaType = FunctionalHttp.Core.MediaType.create "application/x-www-form-urlencoded"
+        let contentInfo = contentInfo.With(mediaType = mediaType)
+        let shouldPublish = if data.shouldPublish then "true" else "false"
+        let content = sprintf "access_token=%s&message=%s&published=%s" data.page.accessToken data.post.message shouldPublish
 
+        return! (contentInfo, content) |> FunctionalHttp.Core.Converters.fromStringToStream
     }
 
 [<Sealed>]
@@ -92,6 +94,7 @@ type FacebookClient (httpClient:HttpClient<Stream,Stream>, tokenProvider:unit->s
     let profileClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, SplatConverters.streamToIBitmap) 
     let userInfoClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, FacebookConverters.streamToUser)
     let postsClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, FacebookConverters.streamToPosts)
+    let createPostClient = httpClient |> HttpClient.usingConverters(FacebookConverters.createPostDataToStream, Converters.fromStreamToUnit)
 
     let withAuthorization req =
         let authorizationCredentials = Challenge.OAuthToken <| tokenProvider()
@@ -106,11 +109,12 @@ type FacebookClient (httpClient:HttpClient<Stream,Stream>, tokenProvider:unit->s
         return response.Entity
     }
 
-    member this.CreatePost (page:Page, post:CreatePostData) = async {
+    member this.CreatePost (post:CreatePostData) = async {
         let request =
-            let uri = Uri(sprintf "https://graph.facebook.com/v2.0/%s/feed" page.id)
-            HttpRequest<unit>.Create(Method.Post, uri, ()) |> withAuthorization
-        ()
+            let uri = Uri(sprintf "https://graph.facebook.com/v2.2/%s/feed" post.page.id)
+            HttpRequest<CreatePostData>.Create(Method.Post, uri, post) |> withAuthorization
+        let! response = request |> createPostClient
+        return response.Entity
     }
 
     member this.ListPosts (page:Page, showUnpublished:bool) = async {

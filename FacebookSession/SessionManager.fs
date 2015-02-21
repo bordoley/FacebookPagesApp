@@ -58,7 +58,7 @@ module FacebookSession =
                                            .SetLoginBehavior(SessionLoginBehavior.SsoWithFallback)
 
                                            // FIXME: Make this a parameter to the constructor
-                                           .SetPermissions([|"manage_pages"|])
+                                           .SetPermissions([|"manage_pages"; "publish_actions" |])
                                            .SetCallback(new RequestCallback(cont)) |> ignore
 
                                     // FIXME: Might need to call read first and then continue with a request for publish. Need to test.

@@ -67,7 +67,7 @@ module ApplicationController =
                 sessionManager.Logout |> Async.StartImmediate),
 
             vm.CreatePost
-                |> Observable.map (fun _ -> (vm.CurrentPage.FirstAsync().Wait(), vm.Pages.FirstAsync().Wait()))
+                |> Observable.bind (fun _ -> Observable.CombineLatest(vm.CurrentPage, vm.Pages))
                 |> Observable.filter (fun (currentPage, _) -> Option.isSome currentPage)
                 |> Observable.map (fun (currentPage, pages) -> (currentPage.Value, pages))
                 |> Observable.map (fun (currentPage, pages) ->  
@@ -187,7 +187,10 @@ module ApplicationController =
                 |> Observable.subscribe (fun _ -> ())
         )
 
-    let private newPostController (vm:INewPostControllerModel) =
+    let private newPostController (vm:INewPostControllerModel)  (sessionManager:ISessionManager) (httpClient:HttpClient<Stream,Stream>) =
+        // FIXME: This is what should be injected
+        let facebookClient = FacebookClient(httpClient, fun () -> sessionManager.AccessToken)
+
         Observable.CombineLatest(vm.PublishPost, vm.Page, vm.PublishDate, vm.PublishTime, vm.PostContent, vm.ShouldPublishPost)
         |> Observable.iter (fun _ -> vm.CanPublishPost.Value <- false)
         |> Observable.map (fun (_, page, publishDate, publishTime, content, shouldPublish) ->
@@ -200,8 +203,16 @@ module ApplicationController =
                     publishTime.Minutes, 
                     publishTime.Seconds)
             let post = { id = ""; message = content; createdTime = publishDateTime }
-            { post = post; shouldPublish = shouldPublish }) 
-        |> Observable.iter (fun _ -> ()) // Send Facebook the post
+            {page = page; post = post; shouldPublish = shouldPublish })
+        |> Observable.bind (fun createPostData  -> 
+            // Send Facebook the post
+            facebookClient.CreatePost createPostData |> Async.toObservable)
+
+
+        // Short term hack. RxApp has a design flaw. It passes the mutable stack to the controller directly for now.
+        // Since controllers can update results from any thread this can cause issues. The fix will be to 
+        // instead expose an applixation mode that the application will subscribe to on the the mainloop and use to 
+        // update the application state.
         |> Observable.observeOnContext SynchronizationContext.Current
         // Check the result, if exception pop up error and set canpublish true otherwise pop the viewmodel
         |> Observable.subscribe (fun _ -> vm.Back.Execute())
@@ -228,7 +239,7 @@ module ApplicationController =
                 | :? ILoginControllerModel as vm -> loginController vm sessionManager
                 | :? IUnknownStateControllerModel as vm -> Disposable.Empty
                 | :? IPagesControllerModel as vm -> pagesController vm navStack sessionManager httpClient
-                | :? INewPostControllerModel as vm -> newPostController vm
+                | :? INewPostControllerModel as vm -> newPostController vm sessionManager httpClient
                 | _ -> failwith ("Unknown controller model type: " + model.ToString())
 
             member this.Dispose () = 

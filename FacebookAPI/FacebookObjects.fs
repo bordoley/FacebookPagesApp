@@ -33,6 +33,7 @@ module PostFeed =
         posts = PersistentVector.empty }
 
 type CreatePostData = {
+        page:Page
         post:Post
         shouldPublish:bool
     }

@@ -5,14 +5,14 @@ using System.Reactive.Linq;
 
 namespace FacebookPagesApp
 {
-    public interface ILoginViewModel : INavigableViewModel, IServiceViewModel
+    public interface ILoginViewModel : INavigationModel, IServiceViewModel
     {
         IObservable<Unit> LoginFailed { get; }
         IRxCommand Login { get; }
         IObservable<bool> NetworkAvailable { get; }
     }
 
-    public interface ILoginControllerModel : INavigableControllerModel, IServiceControllerModel
+    public interface ILoginControllerModel : INavigationModel, IServiceControllerModel
     {
         IRxCommand LoginFailed { get; }
         IObservable<Unit> Login { get; }

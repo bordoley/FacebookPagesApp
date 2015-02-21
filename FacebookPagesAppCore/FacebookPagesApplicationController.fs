@@ -71,7 +71,7 @@ module ApplicationController =
                 |> Observable.filter (fun (currentPage, _) -> Option.isSome currentPage)
                 |> Observable.map (fun (currentPage, pages) -> (currentPage.Value, pages))
                 |> Observable.map (fun (currentPage, pages) ->  
-                    new NewPostModel(pages,  currentPage) :> INavigableControllerModel)
+                    new NewPostModel(pages,  currentPage) :> INavigationModel)
                 |> Observable.subscribe (fun x -> navStack.Push x),
 
             // First load of the data
@@ -207,13 +207,7 @@ module ApplicationController =
         |> Observable.bind (fun createPostData  -> 
             // Send Facebook the post
             facebookClient.CreatePost createPostData |> Async.toObservable)
-
-
-        // Short term hack. RxApp has a design flaw. It passes the mutable stack to the controller directly for now.
-        // Since controllers can update results from any thread this can cause issues. The fix will be to 
-        // instead expose an applixation mode that the application will subscribe to on the the mainloop and use to 
-        // update the application state.
-        |> Observable.observeOnContext SynchronizationContext.Current
+ 
         // Check the result, if exception pop up error and set canpublish true otherwise pop the viewmodel
         |> Observable.subscribe (fun _ -> vm.Back.Execute())
 
@@ -226,11 +220,13 @@ module ApplicationController =
 
                 subscription :=
                     sessionState 
+
+                    // FIXME: Short term hack. Will be removing the ability to access the nav stack directly soon
                     |> Observable.observeOnContext SynchronizationContext.Current
                     |> Observable.map (function
                         // FIXME: Add factories that make this less painful
-                        | LoggedIn -> PagesModel() :> INavigableControllerModel
-                        | LoggedOut -> LoginModel() :> INavigableControllerModel) 
+                        | LoggedIn -> PagesModel() :> INavigationModel
+                        | LoggedOut -> LoginModel() :> INavigationModel) 
                     // FIXME: Update NavStack to make binding easier
                     |> Observable.subscribe(fun x -> navStack.SetRoot x)
                  

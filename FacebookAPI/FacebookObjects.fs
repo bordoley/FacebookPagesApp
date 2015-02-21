@@ -34,6 +34,5 @@ module PostFeed =
 
 type CreatePostData = {
         post:Post
-        page:Page
         shouldPublish:bool
     }

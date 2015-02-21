@@ -90,7 +90,7 @@ module ApplicationController =
                 |> Observable.throttle (TimeSpan(0,0,1))
 
                 |> Observable.bind (fun (currentPage, showUnpublishedPosts) -> 
-                    facebookClient.ListPosts(currentPage.id, showUnpublishedPosts) |> Async.toObservable)
+                    facebookClient.ListPosts(currentPage, showUnpublishedPosts) |> Async.toObservable)
                 |> Observable.iter (fun x ->
                     match x with
                     | Choice1Of2 result -> 
@@ -200,7 +200,7 @@ module ApplicationController =
                     publishTime.Minutes, 
                     publishTime.Seconds)
             let post = { id = ""; message = content; createdTime = publishDateTime }
-            { post = post; page = page; shouldPublish = shouldPublish }) 
+            { post = post; shouldPublish = shouldPublish }) 
         |> Observable.iter (fun _ -> ()) // Send Facebook the post
         |> Observable.observeOnContext SynchronizationContext.Current
         // Check the result, if exception pop up error and set canpublish true otherwise pop the viewmodel

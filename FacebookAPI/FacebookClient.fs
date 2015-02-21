@@ -79,6 +79,13 @@ module internal FacebookConverters =
         return (contentInfo, result)
     }
 
+    let createPostDataToStream (contentInfo:ContentInfo, data:CreatePostData) = async {
+        //let mediaType = FunctionalHttp.Core.
+        //contentInfo.w
+        ()
+
+    }
+
 [<Sealed>]
 type FacebookClient (httpClient:HttpClient<Stream,Stream>, tokenProvider:unit->string) =
     let pagesClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, FacebookConverters.streamToPages)
@@ -92,21 +99,24 @@ type FacebookClient (httpClient:HttpClient<Stream,Stream>, tokenProvider:unit->s
 
     member this.ListPages = async {
         let request = 
-            let uri = new System.Uri("https://graph.facebook.com/v2.2/me/accounts")
+            let uri = Uri("https://graph.facebook.com/v2.2/me/accounts")
             HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
 
         let! response = request |> pagesClient
         return response.Entity
     }
 
-    member this.CreatePost (post:CreatePostData) = async {
+    member this.CreatePost (page:Page, post:CreatePostData) = async {
+        let request =
+            let uri = Uri(sprintf "https://graph.facebook.com/v2.0/%s/feed" page.id)
+            HttpRequest<unit>.Create(Method.Post, uri, ()) |> withAuthorization
         ()
     }
 
-    member this.ListPosts (pageid:string, showUnpublished:bool) = async {
+    member this.ListPosts (page:Page, showUnpublished:bool) = async {
         let request =
             let showUnpublished = if showUnpublished then "true" else "false"
-            let uri = Uri(sprintf "https://graph.facebook.com/v2.2/%s/feed?is_published=%s&limit=10" pageid showUnpublished)
+            let uri = Uri(sprintf "https://graph.facebook.com/v2.2/%s/feed?is_published=%s&limit=10" page.id showUnpublished)
             HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
         
         let! response = request |> postsClient

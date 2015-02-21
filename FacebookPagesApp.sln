@@ -21,6 +21,10 @@ Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "FacebookAPI", "FacebookAPI\
 EndProject
 Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "FSharpxPersistentVector", "FSharpxPersistentVector\FSharpxPersistentVector.fsproj", "{A8716D8A-87D5-4495-90BE-F9DA0670FAF3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FunctionalHttp", "FunctionalHttp", "{3C90EA18-1339-448B-898C-A63D38067DBA}"
+EndProject
+Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "FunctionalHttp-Android", "FunctionalHttp\FunctionalHttp\FunctionalHttp-Android.fsproj", "{AF097090-D42D-42E7-91AD-907A6EEA1336}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +51,10 @@ Global
 		{A8716D8A-87D5-4495-90BE-F9DA0670FAF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A8716D8A-87D5-4495-90BE-F9DA0670FAF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A8716D8A-87D5-4495-90BE-F9DA0670FAF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF097090-D42D-42E7-91AD-907A6EEA1336}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF097090-D42D-42E7-91AD-907A6EEA1336}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF097090-D42D-42E7-91AD-907A6EEA1336}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF097090-D42D-42E7-91AD-907A6EEA1336}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B5E7AB38-54C6-4435-AA85-8D69857B27EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B5E7AB38-54C6-4435-AA85-8D69857B27EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5E7AB38-54C6-4435-AA85-8D69857B27EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -67,5 +75,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{CC5733DE-CD02-451A-8371-2F6067A5CE07} = {44C07A99-B15A-4B1D-9785-3673879F11AF}
 		{C25BB5A4-5A21-4837-8F8F-B46673937F6D} = {44C07A99-B15A-4B1D-9785-3673879F11AF}
+		{AF097090-D42D-42E7-91AD-907A6EEA1336} = {3C90EA18-1339-448B-898C-A63D38067DBA}
 	EndGlobalSection
 EndGlobal

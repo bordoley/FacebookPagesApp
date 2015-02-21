@@ -67,12 +67,6 @@
     <Reference Include="Sparse">
       <HintPath>..\packages\Sparse.0.0.3\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Sparse.dll</HintPath>
     </Reference>
-    <Reference Include="FunctionalHttp">
-      <HintPath>..\packages\FunctionalHttp.0.0.1-pre1\lib\monoandroid\FunctionalHttp.dll</HintPath>
-    </Reference>
-    <Reference Include="FunctionalHttp.CSharpInterop">
-      <HintPath>..\packages\FunctionalHttp.0.0.1-pre1\lib\monoandroid\FunctionalHttp.CSharpInterop.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.FSharp.targets" />
   <ItemGroup>
@@ -102,6 +96,10 @@
     <ProjectReference Include="..\FSharpxPersistentVector\FSharpxPersistentVector.fsproj">
       <Project>{A8716D8A-87D5-4495-90BE-F9DA0670FAF3}</Project>
       <Name>FSharpxPersistentVector</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FunctionalHttp\FunctionalHttp\FunctionalHttp-Android.fsproj">
+      <Project>{AF097090-D42D-42E7-91AD-907A6EEA1336}</Project>
+      <Name>FunctionalHttp-Android</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

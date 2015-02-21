@@ -53,7 +53,7 @@ namespace FacebookPagesApp
 
         IObservable<Unit> LogOut { get; }
 
-        IRxProperty<PersistentVector<FacebookAPI.Post>> Posts { get; }
+        IRxProperty<FacebookAPI.PostFeed> Posts { get; }
 
         IRxProperty<bool> CanLoadMorePosts { get; }
         IObservable<Unit> LoadMorePosts { get; }
@@ -63,8 +63,8 @@ namespace FacebookPagesApp
 
     public sealed class PagesModel : MobileModel, IPagesViewModel, IPagesControllerModel
     { 
-        private readonly IRxProperty<PersistentVector<FacebookAPI.Post>> _posts = 
-            RxProperty.Create(PersistentVector<FacebookAPI.Post>.Empty());
+        private readonly IRxProperty<FacebookAPI.PostFeed> _posts = 
+            RxProperty.Create(FacebookAPI.PostFeedModule.Empty);
 
         private readonly IRxCommand _loadMorePosts;
         private readonly IRxProperty<bool> _canLoadMorePosts = RxProperty.Create(false);
@@ -140,9 +140,9 @@ namespace FacebookPagesApp
         IRxProperty<bool> IPagesControllerModel.CanLoadMorePosts { get { return _canLoadMorePosts; } }
 
 
-        IObservable<IReadOnlyList<FacebookAPI.Post>> IPagesViewModel.Posts { get { return this._posts.Select(x => (IReadOnlyList<FacebookAPI.Post>)x); } }
+        IObservable<IReadOnlyList<FacebookAPI.Post>> IPagesViewModel.Posts { get { return this._posts.Select(x => x.posts); } }
 
-        IRxProperty<PersistentVector<FacebookAPI.Post>> IPagesControllerModel.Posts { get { return this._posts; } }
+        IRxProperty<FacebookAPI.PostFeed> IPagesControllerModel.Posts { get { return this._posts; } }
 
  
         IRxProperty<bool> IPagesControllerModel.ShowRefresher { get { return this._showRefresher; } }

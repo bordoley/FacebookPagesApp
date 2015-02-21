@@ -10,6 +10,8 @@ open FunctionalHttp.Client
 open Newtonsoft.Json
 open Newtonsoft.Json.Linq
 
+open FSharpx.Collections
+
 open Splat
 
 type HttpClient<'TReq, 'TResp> = HttpRequest<'TReq> -> Async<HttpResponse<'TResp>>
@@ -40,7 +42,19 @@ module internal FacebookConverters =
         use sr = new StreamReader(stream)
         let o = JToken.ReadFrom(new JsonTextReader(sr))
 
-        let result : FacebookAPI.Post list = [] 
+        let posts =
+            o.["data"].Children() 
+            |> Seq.map(fun o ->
+                let id = string o.["id"]
+                let message = string o.["message"]
+                //let created = match o.["created_time"] :> obj with | :? DateTime as d -> d | _ -> failwith "not a date" 
+                {message = message; id = id; createdTime = DateTime.Now; })
+            |> PersistentVector.ofSeq
+
+        let prev = string o.["paging"].["previous"] |> (fun x -> Uri(x))
+        let next = string o.["paging"].["next"] |> (fun x -> Uri(x))
+
+        let result = { previous = prev; next = next; posts = posts }
 
         return (contentInfo, result)
     }
@@ -85,15 +99,53 @@ type FacebookClient (httpClient:HttpClient<Stream,Stream>, tokenProvider:unit->s
         return response.Entity
     }
 
-    member this.CreatePost post = ()
+    member this.CreatePost (post:CreatePostData) = async {
+        ()
+    }
 
-    member this.ListPosts (pageid:string) = async {
+    member this.ListPosts (pageid:string, showUnpublished:bool) = async {
         let request =
-            let uri = Uri(sprintf "https://graph.facebook.com/v2.2/%s/feed" pageid)
+            let showUnpublished = if showUnpublished then "true" else "false"
+            let uri = Uri(sprintf "https://graph.facebook.com/v2.2/%s/feed?is_published=%s&limit=10" pageid showUnpublished)
             HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
         
         let! response = request |> postsClient
         return response.Entity
+    }
+
+    member this.RefreshPostsAfter (currentPosts:PostFeed) = async {
+        let request =
+            let uri = currentPosts.previous
+            HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
+        
+        let! response = request |> postsClient
+        return 
+            match response.Entity with
+            | Choice1Of2 x -> 
+                let posts = PersistentVector.append x.posts currentPosts.posts 
+                let next = currentPosts.next
+                let prev = x.previous
+
+                Choice1Of2 { previous = prev; next = next; posts = posts }
+            | Choice2Of2 x -> Choice2Of2 x 
+    }
+
+    member this.LoadMorePostsBefore(currentPosts:PostFeed) = async {
+        let request =
+            let uri = currentPosts.next
+            HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
+        
+        let! response = request |> postsClient
+        return 
+            match response.Entity with
+            | Choice1Of2 x -> 
+                let posts = PersistentVector.append currentPosts.posts x.posts
+                let next = x.next
+                let prev = currentPosts.previous
+
+                Choice1Of2 { previous = prev; next = next; posts = posts }
+            | Choice2Of2 x -> 
+                Choice2Of2 x 
     }
 
     member this.ProfilePhoto = async {

@@ -74,4 +74,10 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FSharpxPersistentVector\FSharpxPersistentVector.fsproj">
+      <Project>{A8716D8A-87D5-4495-90BE-F9DA0670FAF3}</Project>
+      <Name>FSharpxPersistentVector</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

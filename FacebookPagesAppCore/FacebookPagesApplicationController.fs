@@ -28,6 +28,7 @@ module ApplicationController =
         |> Observable.subscribe (fun _ -> ())
 
     let private pagesController (vm:IPagesControllerModel) (navStack:INavigationStack) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream,Stream>) =
+        // FIXME: This is what should be injected
         let facebookClient = FacebookClient(httpClient, fun () -> sessionManager.AccessToken)
 
         async {
@@ -88,21 +89,15 @@ module ApplicationController =
                 // Throttle a second
                 |> Observable.throttle (TimeSpan(0,0,1))
 
-                |> Observable.iter (fun _ ->
-                    vm.Posts.Value <- 
-                        (PersistentVector.ofSeq [{ id = ""; message = "initial value"; createdTime = DateTime.Now }]) 
-
-                    ())
-
-                // Load the data
-                // Fixme: If the user switches pages or toggles show unpublished
-                // the http request should be abandoned and the rest of the workflow
-                // abandoned
-                |> Observable.map (fun (currentPage, showUnpublished) -> ())
-
-                // Check the result. If data provided publish it to the view model
-                // otherwise pop up an error message unless it was caused by cancellation
-                |> Observable.map (fun _ -> ())
+                |> Observable.bind (fun (currentPage, showUnpublishedPosts) -> 
+                    facebookClient.ListPosts(currentPage.id, showUnpublishedPosts) |> Async.toObservable)
+                |> Observable.iter (fun x ->
+                    match x with
+                    | Choice1Of2 result -> 
+                        vm.Posts.Value <- result
+                    | _ -> 
+                        // Else use command to send error message
+                        ())
 
                 // Unblock trying to load more or refresh
                 |> Observable.iter (fun _ -> 
@@ -131,15 +126,15 @@ module ApplicationController =
                 // FIXME: There is a race condition if the user changes the page or the show unpublished posts at this point
                 // To address it we should pass in a cancellation token to cancel the request at this point
                 // and abandon the transaction
-                |> Observable.map (fun x -> x)
-
-                // Check the result. If data provided publish it to the view model
-                // otherwise pop up an error message unless it was caused by cancellation
-                |> Observable.map (fun (_, _, posts) ->       
-                    vm.Posts.Value <- 
-                        PersistentVector.append posts (PersistentVector.ofSeq [{ id = ""; message = sprintf "load more %s" (DateTime.Now.ToString()); createdTime = DateTime.Now }]) 
-
-                    ())
+                |> Observable.bind (fun (currentPage, showUnpublishedPosts, posts) -> 
+                    facebookClient.LoadMorePostsBefore(posts) |> Async.toObservable)
+                |> Observable.iter (fun x ->
+                    match x with
+                    | Choice1Of2 result -> 
+                        vm.Posts.Value <- result
+                    | _ -> 
+                        // Else use command to send error message
+                        ())
 
                 // Unblock trying to load more or refresh
                 |> Observable.iter (fun _ -> 
@@ -171,15 +166,16 @@ module ApplicationController =
                 // FIXME: There is a race condition if the user changes the page or the show unpublished posts at this point
                 // To address it we should pass in a cancellation token to cancel the request at this point
                 // and abandon the transaction
-                |> Observable.map (fun x -> x)
-
-                // Check the result. If data provided publish it to the view model
-                // otherwise pop up an error message unless it was caused by cancellation
-                |> Observable.map (fun (_,_, posts) ->       
-                    vm.Posts.Value <- 
-                        PersistentVector.append (PersistentVector.ofSeq [{ id = ""; message = sprintf "refresh %s" (DateTime.Now.ToString()); createdTime = DateTime.Now }]) posts 
-
-                    ())
+                |> Observable.bind (fun (currentPage, showUnpublishedPosts, posts) -> 
+                    facebookClient.RefreshPostsAfter(posts) |> Async.toObservable)
+                
+                |> Observable.iter (fun x ->
+                    match x with
+                    | Choice1Of2 result -> 
+                        vm.Posts.Value <- result
+                    | _ -> 
+                        // Else use command to send error message
+                        ())
 
                 // Unblock trying to load more or refresh
                 |> Observable.iter (fun _ -> 

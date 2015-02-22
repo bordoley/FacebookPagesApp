@@ -43,7 +43,7 @@ namespace FacebookPagesApp
 
             LoginActivity._current = this;
 
-            this.subscription = Disposable.Combine(
+            this.subscription = Disposable.Compose(
                 this.ViewModel.Login.Bind(this.authButton),
 
                 this.ViewModel.LoginFailed

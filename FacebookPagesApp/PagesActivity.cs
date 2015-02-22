@@ -70,7 +70,7 @@ namespace FacebookPagesApp
         {
             base.OnResume();
 
-            subscription = Disposable.Combine( 
+            subscription = Disposable.Compose( 
                 this.ViewModel.ShowRefresher.BindTo(refresher, x => x.Refreshing), 
                 this.ViewModel.RefreshPosts.Bind(refresher), 
               

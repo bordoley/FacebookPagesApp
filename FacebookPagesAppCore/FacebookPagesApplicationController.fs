@@ -61,7 +61,7 @@ module ApplicationController =
         } |> Async.StartImmediate
       
         //let requestLock
-        Disposable.Combine(       
+        Disposable.Compose(       
             vm.LogOut |> Observable.subscribe (fun _ -> 
                 sessionManager.Logout |> Async.StartImmediate),
 

@@ -152,7 +152,7 @@ namespace FacebookPagesApp
         {
             base.OnResume();
 
-            this.subscription = Disposable.Combine(
+            this.subscription = Disposable.Compose(
                 this.ViewModel.Page.Select(x => x.name).BindTo(choosePage, x => x.Text),
 
                 Observable.FromEventPattern(choosePage, "Click")

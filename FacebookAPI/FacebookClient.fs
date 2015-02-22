@@ -119,8 +119,10 @@ type FacebookClient (httpClient:HttpClient<Stream,Stream>, tokenProvider:unit->s
 
     member this.ListPosts (page:Page, showUnpublished:bool) = async {
         let request =
-            let showUnpublished = if showUnpublished then "true" else "false"
-            let uri = Uri(sprintf "https://graph.facebook.com/v2.2/%s/feed?is_published=%s&limit=10" page.id showUnpublished)
+            let uri =
+                if showUnpublished
+                    then Uri(sprintf "https://graph.facebook.com/v2.2/%s/promotable_posts?is_published=false&limit=10" page.id)
+                    else Uri(sprintf "https://graph.facebook.com/v2.2/%s/feed?limit=10" page.id)
             HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
         
         let! response = request |> postsClient

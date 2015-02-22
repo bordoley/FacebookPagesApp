@@ -30,7 +30,7 @@ namespace FacebookPagesApp
 
         IObservable<IReadOnlyList<FacebookAPI.Post>> Posts { get; }
 
-        IRxCommand RefeshPosts { get; }
+        IRxCommand RefreshPosts { get; }
 
         IRxCommand LoadMorePosts { get; }
     }
@@ -50,15 +50,16 @@ namespace FacebookPagesApp
         IRxProperty<bool> ShowRefresher { get; }
 
         IObservable<Unit> CreatePost { get; }
+        IRxProperty<bool> CanCreatePost { get; }
 
         IObservable<Unit> LogOut { get; }
 
         IRxProperty<FacebookAPI.PostFeed> Posts { get; }
 
         IRxProperty<bool> CanLoadMorePosts { get; }
-        IObservable<Unit> LoadMorePosts { get; }
+        IRxCommand LoadMorePosts { get; }
 
-        IObservable<Unit> RefreshPosts { get; }
+        IRxCommand RefreshPosts { get; }
     }
 
     public sealed class PagesModel : MobileModel, IPagesViewModel, IPagesControllerModel
@@ -70,7 +71,9 @@ namespace FacebookPagesApp
         private readonly IRxProperty<bool> _canLoadMorePosts = RxProperty.Create(false);
         private readonly IRxCommand _refreshPosts;
 
-        private readonly IRxCommand _createPost = RxCommand.Create();
+        private readonly IRxCommand _createPost;
+        private readonly IRxProperty<bool> _canCreatePost = RxProperty.Create(false);
+
         private readonly IRxCommand _logOut = RxCommand.Create();
 
         private readonly IRxProperty<bool> _showRefresher = RxProperty.Create(false);
@@ -91,6 +94,8 @@ namespace FacebookPagesApp
             // FIXME: Consider always allowing a pull to refresh
             // and instead use an async lock to prevent multiple loads of data
             _refreshPosts = _canLoadMorePosts.ToCommand();
+
+            _createPost = _canCreatePost.ToCommand();
         }
 
         IRxProperty<bool> IPagesViewModel.ShowUnpublishedPosts { get { return _showUnpublishedPosts; } }
@@ -122,20 +127,18 @@ namespace FacebookPagesApp
 
         IObservable<Unit> IPagesControllerModel.CreatePost { get { return _createPost; } }
 
+        IRxProperty<bool> IPagesControllerModel.CanCreatePost { get { return _canCreatePost; } }
+
 
         IRxCommand IPagesViewModel.LogOut { get { return _logOut; } }
 
         IObservable<Unit> IPagesControllerModel.LogOut { get { return _logOut; } }
 
 
-        IRxCommand IPagesViewModel.RefeshPosts { get { return _refreshPosts; } }
-
-        IObservable<Unit> IPagesControllerModel.RefreshPosts { get { return _refreshPosts; } }
+        public IRxCommand RefreshPosts { get { return _refreshPosts; } }
 
 
-        IRxCommand IPagesViewModel.LoadMorePosts { get { return _loadMorePosts; } }
-
-        IObservable<Unit> IPagesControllerModel.LoadMorePosts { get { return _loadMorePosts; } }
+        public IRxCommand LoadMorePosts { get { return _loadMorePosts; } }
 
         IRxProperty<bool> IPagesControllerModel.CanLoadMorePosts { get { return _canLoadMorePosts; } }
 

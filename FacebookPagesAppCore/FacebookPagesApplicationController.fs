@@ -61,12 +61,15 @@ module ApplicationController =
         } |> Async.StartImmediate
       
         //let requestLock
-        Disposable.Combine(
+        Disposable.Combine(       
             vm.LogOut |> Observable.subscribe (fun _ -> 
                 sessionManager.Logout |> Async.StartImmediate),
 
             vm.CreatePost
-                |> Observable.bind (fun _ -> Observable.CombineLatest(vm.CurrentPage, vm.Pages))
+                |> Observable.bind (fun _ -> 
+                    Observable.CombineLatest(vm.CurrentPage, vm.Pages) 
+                    |> Observable.first)
+                |> Observable.filter(fun(_, pages) -> pages.Count <> 0)
                 |> Observable.filter (fun (currentPage, _) -> Option.isSome currentPage)
                 |> Observable.map (fun (currentPage, pages) -> (currentPage.Value, pages))
                 |> Observable.map (fun (currentPage, pages) ->  
@@ -77,6 +80,7 @@ module ApplicationController =
             Observable.CombineLatest(vm.CurrentPage, vm.ShowUnpublishedPosts)
                 // Clear the posts, and prevent the user from trying to refresh or load more
                 |> Observable.iter (fun _ -> 
+                    vm.CanCreatePost.Value <- true
                     vm.CanLoadMorePosts.Value <- false)
 
                 // FIXME: Try to grab the requestLock otherwise abandon

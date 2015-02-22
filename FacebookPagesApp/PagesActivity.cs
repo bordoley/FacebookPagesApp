@@ -22,7 +22,7 @@ using Observable = System.Reactive.Linq.Observable;
 
 namespace FacebookPagesApp
 {
-    [Activity(Label="Page")]    
+    [Activity(Label="@string/facebook_pages")]    
     public sealed class PagesActivity : RxActivity<IPagesViewModel>, AbsListView.IOnScrollListener
     {
         // FIXME: Ideally I'd like to add this directly to RxApp.Android in a friendly way. Maybe ObservableListView. 
@@ -32,6 +32,7 @@ namespace FacebookPagesApp
 
         private IDisposable subscription = null;
 
+        private DrawerLayout drawerLayout;
         private SwipeRefreshLayout refresher;
         private Button logoutButton;
         private TextView userName;
@@ -56,10 +57,10 @@ namespace FacebookPagesApp
             showUnpublishedPosts = this.FindViewById<Switch>(Resource.Id.show_unpublished);
             userpages = this.FindViewById<ListView>(Resource.Id.user_pages);
             posts = this.FindViewById<ListView>(Resource.Id.pages_posts);
+            drawerLayout = this.FindViewById<DrawerLayout> (Resource.Id.drawer_layout);
 
             posts.SetOnScrollListener(this);
 
-            var drawerLayout = this.FindViewById<DrawerLayout> (Resource.Id.drawer_layout);
             drawerLayout.SetDrawerShadow (Resource.Drawable.drawer_shadow_light, (int)GravityFlags.Start);
         }
 
@@ -69,7 +70,7 @@ namespace FacebookPagesApp
 
             subscription = Disposable.Combine( 
                 this.ViewModel.ShowRefresher.BindTo(refresher, x => x.Refreshing), 
-                this.ViewModel.RefeshPosts.Bind(refresher), 
+                this.ViewModel.RefreshPosts.Bind(refresher), 
               
                 this.ViewModel.LogOut.Bind(this.logoutButton),   
 
@@ -85,24 +86,32 @@ namespace FacebookPagesApp
 
                 this.ViewModel.ShowUnpublishedPosts.Bind(this.showUnpublishedPosts),
 
+                // FIXME: This really belongs in the controller or maybe the model.
                 this.ViewModel.Pages
-                    .ObserveOnMainThread()
-                    .Do(x =>
-                        {
-                            if (x.Count > 0)
-                            {
-                                this.ViewModel.CurrentPage.Value = FSharpOption<FacebookAPI.Page>.Some(x[0]);
-                            }
-                        })
+                    .Where(x => x.Count > 0)
+                    .Select(x => FSharpOption<FacebookAPI.Page>.Some(x[0]))
+                    .Subscribe(x => this.ViewModel.CurrentPage.Value = x),
+
+                this.ViewModel.Pages
                     .BindTo(
                         userpages, 
                         (parent) => new TextView(parent.Context),
                         (viewModel, view) => { view.Text = viewModel.name; }),
 
+                this.ViewModel.CurrentPage
+                    .Where(x => OptionModule.IsSome(x))
+                    .Select(x => x.Value.name)
+                    .BindTo(this, x=> x.Title),
+
                 Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")
                       .Select(x => x.EventArgs.Position)
                       .CombineLatest(this.ViewModel.Pages)
                       .Select(t => FSharpOption<FacebookAPI.Page>.Some(t.Item2[t.Item1]))
+
+                      // FIXME: Closing the drawer imperitively in the view bindings here
+                      // means that the experience is not testable.
+                      .ObserveOnMainThread()
+                      .Do(_ => this.drawerLayout.CloseDrawers())
                       .BindTo(this.ViewModel.CurrentPage), 
 
                 // FIXME: need

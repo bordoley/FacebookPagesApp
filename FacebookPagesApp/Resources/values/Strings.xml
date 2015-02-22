@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<string name="application_name">Pages</string>
+
+	<!-- Facebook API details -->
 	<string name="app_name">PagesApp</string>
 	<string name="app_id">1414074408893076</string>
 
@@ -20,4 +23,10 @@
 	<string name="new_post_action_bar_post">Publish post</string>
 
 	<string name="compose_post">Compose post</string>
+
+	<string name="facebook_pages">Facebook Pages</string>
+
+	<string name="post_to_facebook">Post to Facebook</string>
+
+	<string name="choose_page_to_post_to">Post to this page:</string>
 </resources>

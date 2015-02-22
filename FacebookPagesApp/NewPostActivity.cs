@@ -174,7 +174,6 @@ namespace FacebookPagesApp
                     .SelectMany(_ => DialogHelpers.PickTime(this, this.ViewModel.PublishTime.Value))
                     .BindTo(this.ViewModel.PublishTime),
 
-                // FIxME: format the date pretty
                 this.ViewModel.PublishTime
                     .Select(x => 
                         {

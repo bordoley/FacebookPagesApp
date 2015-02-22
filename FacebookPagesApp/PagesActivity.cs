@@ -8,6 +8,7 @@ using Android.OS;
 using Android.Views;
 using Android.Widget;
 using Android.Support.V4.Widget;
+using Android.Support.V7.Widget;
 
 using RxApp;
 using RxApp.Android;
@@ -19,6 +20,7 @@ using System.Reactive.Subjects;
 using Microsoft.FSharp.Core;
 
 using Observable = System.Reactive.Linq.Observable;
+using CardView = Android.Support.V7.Widget.CardView;
 
 namespace FacebookPagesApp
 {
@@ -137,8 +139,16 @@ namespace FacebookPagesApp
                 this.ViewModel.Posts
                     .BindTo(
                         posts, 
-                        (parent) => new TextView(parent.Context),
-                        (viewModel, view) => { view.Text = viewModel.message; }),
+                        (parent) => 
+                            {
+                                return LayoutInflater.From(parent.Context).Inflate(Resource.Layout.FacebookPostCard, parent,false);
+                                //return (CardView) view;
+                            },
+                        (viewModel, view) => 
+                            { 
+                                var textView = view.FindViewById<TextView>(Resource.Id.post_card_text);
+                                textView.Text = viewModel.message;
+                            }),
 
                 this.OptionsItemSelected
                     .Where(item => item.ItemId == Resource.Id.pages_action_bar_new_post)

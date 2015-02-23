@@ -47,12 +47,10 @@ namespace FacebookPagesApp
                 this.ViewModel.Login.Bind(this.authButton),
 
                 this.ViewModel.LoginFailed
-                    .ObserveOnMainThread()
-                    .Subscribe(_ =>
-                        Toast.MakeText(
-                            this, 
-                            this.Resources.GetString(Resource.String.login_failed), 
-                            ToastLength.Long).Show()),
+                    .BindTo(Toast.MakeText(
+                                this, 
+                                this.Resources.GetString(Resource.String.login_failed), 
+                                ToastLength.Long).Show),
 
                 this.ViewModel.NetworkAvailable
                               .Select(x => x ? ViewStates.Gone : ViewStates.Visible)

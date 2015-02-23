@@ -26,10 +26,7 @@ module ApplicationController =
                 vm.CanLogin.Value <- true)
         |> Observable.subscribe (fun _ -> ())
 
-    let private pagesController (vm:IPagesControllerModel) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream,Stream>) =
-        // FIXME: This is what should be injected
-        let facebookClient = FacebookClient(httpClient, fun () -> sessionManager.AccessToken)
-
+    let private pagesController (vm:IPagesControllerModel) (sessionManager:ISessionManager) (facebookClient:IFacebookClient) =
         async {
             // FIXME: Ideally we cache the image in SQLite and check if its available before making the http request. Also need 
             // some retry logic here.
@@ -190,10 +187,7 @@ module ApplicationController =
                 |> Observable.subscribe (fun _ -> ())
         )
 
-    let private newPostController (vm:INewPostControllerModel)  (sessionManager:ISessionManager) (httpClient:HttpClient<Stream,Stream>) =
-        // FIXME: This is what should be injected
-        let facebookClient = FacebookClient(httpClient, fun () -> sessionManager.AccessToken)
-
+    let private newPostController (vm:INewPostControllerModel)(facebookClient:IFacebookClient) =
         Observable.CombineLatest(vm.PublishPost, vm.Page, vm.PublishDate, vm.PublishTime, vm.PostContent, vm.ShouldPublishPost)
         |> Observable.iter (fun _ -> vm.CanPublishPost.Value <- false)
         |> Observable.map (fun (_, page, publishDate, publishTime, content, shouldPublish) ->
@@ -223,11 +217,13 @@ module ApplicationController =
         |> Observable.startWith ([UnknownStateModel() :> INavigationModel])
 
     let bindController (sessionManager:ISessionManager) (httpClient:HttpClient<Stream, Stream>) = 
+        let facebookClient = FacebookClient.create httpClient (fun () -> sessionManager.AccessToken)
+
         let bind (model:obj) =
             match model with 
             | :? ILoginControllerModel as vm -> loginController vm sessionManager
             | :? IUnknownStateControllerModel as vm -> Disposable.Empty
-            | :? IPagesControllerModel as vm -> pagesController vm sessionManager httpClient
-            | :? INewPostControllerModel as vm -> newPostController vm sessionManager httpClient
+            | :? IPagesControllerModel as vm -> pagesController vm sessionManager facebookClient
+            | :? INewPostControllerModel as vm -> newPostController vm facebookClient
             | _ -> failwith ("Unknown controller model type: " + model.ToString())
         System.Func<obj, IDisposable>(bind)

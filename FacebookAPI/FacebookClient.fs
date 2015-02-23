@@ -88,94 +88,105 @@ module internal FacebookConverters =
         return! (contentInfo, content) |> FunctionalHttp.Core.Converters.fromStringToStream
     }
 
-[<Sealed>]
-type FacebookClient (httpClient:HttpClient<Stream,Stream>, tokenProvider:unit->string) =
-    let pagesClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, FacebookConverters.streamToPages)
-    let profileClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, SplatConverters.streamToIBitmap) 
-    let userInfoClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, FacebookConverters.streamToUser)
-    let postsClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, FacebookConverters.streamToPosts)
-    let createPostClient = httpClient |> HttpClient.usingConverters(FacebookConverters.createPostDataToStream, Converters.fromStreamToUnit)
+type IFacebookClient =
+    abstract member ListPages : Async<Choice<Page list,exn>> with get
+    abstract member CreatePost: CreatePostData -> Async<Choice<Unit,exn>> 
+    abstract member ListPosts: Page*bool -> Async<Choice<PostFeed,exn>>
+    abstract member RefreshPostsAfter: PostFeed -> Async<Choice<PostFeed,exn>>
+    abstract member LoadMorePostsBefore: PostFeed -> Async<Choice<PostFeed,exn>>
+    abstract member ProfilePhoto: Async<Choice<IBitmap, exn>> with get
+    abstract member UserInfo: Async<Choice<UserInfo, exn>> with get
 
-    let withAuthorization req =
-        let authorizationCredentials = Challenge.OAuthToken <| tokenProvider()
-        req |> HttpRequest.withAuthorization authorizationCredentials
+module FacebookClient =
+    let create (httpClient:HttpClient<Stream,Stream>) (tokenProvider:unit->string) =
+        let pagesClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, FacebookConverters.streamToPages)
+        let profileClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, SplatConverters.streamToIBitmap) 
+        let userInfoClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, FacebookConverters.streamToUser)
+        let postsClient = httpClient |> HttpClient.usingConverters (Converters.fromUnitToStream, FacebookConverters.streamToPosts)
+        let createPostClient = httpClient |> HttpClient.usingConverters(FacebookConverters.createPostDataToStream, Converters.fromStreamToUnit)
 
-    member this.ListPages = async {
-        let request = 
-            let uri = Uri("https://graph.facebook.com/v2.2/me/accounts")
-            HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
+        let withAuthorization req =
+            let authorizationCredentials = Challenge.OAuthToken <| tokenProvider()
+            req |> HttpRequest.withAuthorization authorizationCredentials
 
-        let! response = request |> pagesClient
-        return response.Entity
-    }
+        { new IFacebookClient with
+            member this.ListPages = async {
+                let request = 
+                    let uri = Uri("https://graph.facebook.com/v2.2/me/accounts")
+                    HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
 
-    member this.CreatePost (post:CreatePostData) = async {
-        let request =
-            let uri = Uri(sprintf "https://graph.facebook.com/v2.2/%s/feed" post.page.id)
-            HttpRequest<CreatePostData>.Create(Method.Post, uri, post) |> withAuthorization
-        let! response = request |> createPostClient
-        return response.Entity
-    }
+                let! response = request |> pagesClient
+                return response.Entity
+            }
 
-    member this.ListPosts (page:Page, showUnpublished:bool) = async {
-        let request =
-            let uri =
-                if showUnpublished
-                    then Uri(sprintf "https://graph.facebook.com/v2.2/%s/promotable_posts?is_published=false&limit=10" page.id)
-                    else Uri(sprintf "https://graph.facebook.com/v2.2/%s/feed?limit=10" page.id)
-            HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
-        
-        let! response = request |> postsClient
-        return response.Entity
-    }
+            member this.CreatePost (post:CreatePostData) = async {
+                let request =
+                    let uri = Uri(sprintf "https://graph.facebook.com/v2.2/%s/feed" post.page.id)
+                    HttpRequest<CreatePostData>.Create(Method.Post, uri, post) |> withAuthorization
+                let! response = request |> createPostClient
+                return response.Entity
+            }
 
-    member this.RefreshPostsAfter (currentPosts:PostFeed) = async {
-        let request =
-            let uri = currentPosts.previous
-            HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
-        
-        let! response = request |> postsClient
-        return 
-            match response.Entity with
-            | Choice1Of2 x -> 
-                let posts = PersistentVector.append x.posts currentPosts.posts 
-                let next = currentPosts.next
-                let prev = x.previous
+            member this.ListPosts (page:Page, showUnpublished:bool) = async {
+                let request =
+                    let uri =
+                        if showUnpublished
+                            then Uri(sprintf "https://graph.facebook.com/v2.2/%s/promotable_posts?is_published=false&limit=10" page.id)
+                            else Uri(sprintf "https://graph.facebook.com/v2.2/%s/feed?limit=10" page.id)
+                    HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
+                
+                let! response = request |> postsClient
+                return response.Entity
+            }
 
-                Choice1Of2 { previous = prev; next = next; posts = posts }
-            | Choice2Of2 x -> Choice2Of2 x 
-    }
+            member this.RefreshPostsAfter (currentPosts:PostFeed) = async {
+                let request =
+                    let uri = currentPosts.previous
+                    HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
+                
+                let! response = request |> postsClient
+                return 
+                    match response.Entity with
+                    | Choice1Of2 x -> 
+                        let posts = PersistentVector.append x.posts currentPosts.posts 
+                        let next = currentPosts.next
+                        let prev = x.previous
 
-    member this.LoadMorePostsBefore(currentPosts:PostFeed) = async {
-        let request =
-            let uri = currentPosts.next
-            HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
-        
-        let! response = request |> postsClient
-        return 
-            match response.Entity with
-            | Choice1Of2 x -> 
-                let posts = PersistentVector.append currentPosts.posts x.posts
-                let next = x.next
-                let prev = currentPosts.previous
+                        Choice1Of2 { previous = prev; next = next; posts = posts }
+                    | Choice2Of2 x -> Choice2Of2 x 
+            }
 
-                Choice1Of2 { previous = prev; next = next; posts = posts }
-            | Choice2Of2 x -> 
-                Choice2Of2 x 
-    }
+            member this.LoadMorePostsBefore(currentPosts:PostFeed) = async {
+                let request =
+                    let uri = currentPosts.next
+                    HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
+                
+                let! response = request |> postsClient
+                return 
+                    match response.Entity with
+                    | Choice1Of2 x -> 
+                        let posts = PersistentVector.append currentPosts.posts x.posts
+                        let next = x.next
+                        let prev = currentPosts.previous
 
-    member this.ProfilePhoto = async {
-        let request =
-            let uri = Uri("https://graph.facebook.com/v2.2/me/picture?type=large")
-            HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
-        let! response = request |> profileClient
-        return response.Entity
-    }
+                        Choice1Of2 { previous = prev; next = next; posts = posts }
+                    | Choice2Of2 x -> 
+                        Choice2Of2 x 
+            }
 
-    member this.UserInfo = async {
-        let request =
-            let uri = new System.Uri("https://graph.facebook.com/v2.2/me")
-            HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
-        let! response = request |> userInfoClient
-        return response.Entity
-    }     
+            member this.ProfilePhoto = async {
+                let request =
+                    let uri = Uri("https://graph.facebook.com/v2.2/me/picture?type=large")
+                    HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
+                let! response = request |> profileClient
+                return response.Entity
+            }
+
+            member this.UserInfo = async {
+                let request =
+                    let uri = new System.Uri("https://graph.facebook.com/v2.2/me")
+                    HttpRequest<unit>.Create(Method.Get, uri, ()) |> withAuthorization
+                let! response = request |> userInfoClient
+                return response.Entity
+            }     
+        }

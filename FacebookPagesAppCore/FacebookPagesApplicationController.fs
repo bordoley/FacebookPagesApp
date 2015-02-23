@@ -214,26 +214,20 @@ module ApplicationController =
         // Check the result, if exception pop up error and set canpublish true otherwise pop the viewmodel
         |> Observable.subscribe (fun _ -> vm.Back.Execute())
 
-    let create (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream, Stream>) = 
-        let subscription : IDisposable ref= ref null                                         
+    let rootState (sessionState:IObservable<LoginState>) = 
+        sessionState 
+        |> Observable.map (function
+            // FIXME: Add factories that make this less painful
+            | LoggedIn -> PagesModel() :> INavigationModel
+            | LoggedOut -> LoginModel() :> INavigationModel) 
+        |> Observable.startWith ([UnknownStateModel() :> INavigationModel])
 
-        { new IApplication with
-            member this.ResetApplicationState 
-                with get () =
-                    sessionState 
-                    // FIXME: Observe on the context so that we for a mainloop hop on every change.
-                    |> Observable.observeOnContext System.Threading.SynchronizationContext.Current
-                    |> Observable.map (function
-                        // FIXME: Add factories that make this less painful
-                        | LoggedIn -> PagesModel() :> INavigationModel
-                        | LoggedOut -> LoginModel() :> INavigationModel) 
-                    |> Observable.startWith ([UnknownStateModel() :> INavigationModel])
-                 
-            member this.Bind (model:obj) = 
-                match model with 
-                | :? ILoginControllerModel as vm -> loginController vm sessionManager
-                | :? IUnknownStateControllerModel as vm -> Disposable.Empty
-                | :? IPagesControllerModel as vm -> pagesController vm sessionManager httpClient
-                | :? INewPostControllerModel as vm -> newPostController vm sessionManager httpClient
-                | _ -> failwith ("Unknown controller model type: " + model.ToString())
-        }
+    let bindController (sessionManager:ISessionManager) (httpClient:HttpClient<Stream, Stream>) = 
+        let bind (model:obj) =
+            match model with 
+            | :? ILoginControllerModel as vm -> loginController vm sessionManager
+            | :? IUnknownStateControllerModel as vm -> Disposable.Empty
+            | :? IPagesControllerModel as vm -> pagesController vm sessionManager httpClient
+            | :? INewPostControllerModel as vm -> newPostController vm sessionManager httpClient
+            | _ -> failwith ("Unknown controller model type: " + model.ToString())
+        System.Func<obj, IDisposable>(bind)

@@ -18,9 +18,12 @@ namespace FacebookPagesApp
     [Application]
     public sealed class FacebookPagesApplication : RxApplication
     {
-        public const string XAMARIN_INSIGHTS_KEY = 
+        private const string XAMARIN_INSIGHTS_KEY = 
             "483137a8b42bc65cd39f3b649599093a6e09ce46";
 
+        private Func<object,IDisposable> bindController;
+        private IObservable<INavigationModel> rootState;
+       
         public FacebookPagesApplication(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
         }
@@ -35,14 +38,14 @@ namespace FacebookPagesApp
             throw new Exception("No view for view model");
         }
 
-        public override IApplication ProvideApplication()
-        {
-            var httpClient = FunctionalHttp.Client.HttpClient.FromNetHttpClient(new HttpClient(new NativeMessageHandler()));
+        public override IObservable<INavigationModel> RootState()
+        { 
+            return rootState;
+        }
 
-            return ApplicationController.create(
-                FacebookSession.observe(this.ApplicationContext),
-                FacebookSession.getManagerWithFunc(() => LoginActivity.Current),
-                httpClient);
+        public override IDisposable BindController(object model)
+        {
+            return bindController(model);
         }
 
         public override void OnCreate()
@@ -58,6 +61,16 @@ namespace FacebookPagesApp
                 var key = System.Text.Encoding.UTF8.GetString(Android.Util.Base64.Encode(md.Digest(), 0));
                 Android.Util.Log.Error("Key Hash=", key);
             }*/
+
+            var httpClient = FunctionalHttp.Client.HttpClient.FromNetHttpClient(new HttpClient(new NativeMessageHandler()));
+
+            this.rootState = 
+                ApplicationController.rootState(FacebookSession.observe(this.ApplicationContext));
+
+            this.bindController = 
+                ApplicationController.bindController(
+                    FacebookSession.getManagerWithFunc(() => LoginActivity.Current),
+                    httpClient);
         }
     }
 }

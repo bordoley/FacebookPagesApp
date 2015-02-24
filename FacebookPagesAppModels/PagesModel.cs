@@ -10,7 +10,7 @@ using Unit = System.Reactive.Unit;
 
 namespace FacebookPagesApp
 {
-    public interface IPagesViewModel : INavigationModel, IServiceViewModel
+    public interface IPagesViewModel : INavigationModel, IActivationViewModel
     {
         IObservable<string> UserName { get; }
 
@@ -35,7 +35,7 @@ namespace FacebookPagesApp
         IRxCommand LoadMorePosts { get; }
     }
 
-    public interface IPagesControllerModel : INavigationModel, IServiceControllerModel
+    public interface IPagesControllerModel : INavigationModel, IActivationControllerModel
     {
         IRxProperty<string> UserName { get; }
 

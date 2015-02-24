@@ -3,11 +3,11 @@ using RxApp;
 
 namespace FacebookPagesApp
 {
-    public interface IUnknownStateViewModel : INavigationModel, IActivationViewModel
+    public interface IUnknownStateViewModel : IMobileViewModel
     {
     }
 
-    public interface IUnknownStateControllerModel : INavigationModel, IActivationControllerModel
+    public interface IUnknownStateControllerModel : IMobileControllerModel
     {
     }
 

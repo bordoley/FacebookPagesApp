@@ -22,13 +22,13 @@ namespace FacebookPagesApp
             "483137a8b42bc65cd39f3b649599093a6e09ce46";
 
         private Func<object,IDisposable> bindController;
-        private IObservable<INavigationModel> rootState;
+        private IObservable<IMobileModel> rootState;
        
         public FacebookPagesApplication(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
         }
 
-        public override Type GetActivityType(object model)
+        public override Type GetActivityType(IMobileViewModel model)
         {
                  if (model is ILoginViewModel       ) { return typeof(LoginActivity);        } 
             else if (model is IUnknownStateViewModel) { return typeof(UnknownStateActivity); } 
@@ -38,7 +38,7 @@ namespace FacebookPagesApp
             throw new Exception("No view for view model");
         }
 
-        public override IObservable<INavigationModel> RootState()
+        public override IObservable<IMobileModel> RootState()
         { 
             return rootState;
         }

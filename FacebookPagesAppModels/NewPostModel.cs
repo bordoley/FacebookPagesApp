@@ -8,7 +8,7 @@ using Observable = System.Reactive.Linq.Observable;
 
 namespace FacebookPagesApp
 {
-    public interface INewPostViewModel : IMobileViewModel
+    public interface INewPostViewModel : INavigationViewModel
     {
         IRxProperty<bool> ShouldPublishPost { get; }
         IRxProperty<DateTime> PublishDate { get; }
@@ -21,7 +21,7 @@ namespace FacebookPagesApp
         IRxCommand PublishPost { get; }
     }
 
-    public interface INewPostControllerModel : IMobileControllerModel
+    public interface INewPostControllerModel : INavigationControllerModel
     {
         IObservable<bool> ShouldPublishPost { get; }
         IObservable<DateTime> PublishDate { get; }
@@ -33,7 +33,7 @@ namespace FacebookPagesApp
         IRxProperty<bool> CanPublishPost { get; }
     }
 
-    public sealed class NewPostModel : MobileModel, INewPostViewModel, INewPostControllerModel
+    public sealed class NewPostModel : NavigationModel, INewPostViewModel, INewPostControllerModel
     {
         private readonly IRxProperty<bool> _shouldPublishPost = RxProperty.Create(true);
         private readonly IRxProperty<DateTime> _publishDate = RxProperty.Create(DateTime.Now);

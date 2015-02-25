@@ -148,9 +148,9 @@ namespace FacebookPagesApp
             ActionBar.SetHomeButtonEnabled (true);
         }
 
-        protected override void OnResume()
+        protected override void OnStart()
         {
-            base.OnResume();
+            base.OnStart();
 
             this.subscription = Disposable.Compose(
                 this.ViewModel.Page.Select(x => x.name).BindTo(choosePage, x => x.Text),
@@ -200,10 +200,10 @@ namespace FacebookPagesApp
             return base.OnCreateOptionsMenu(menu);
         }
             
-        protected override void OnPause()
+        protected override void OnStop()
         {
             subscription.Dispose();
-            base.OnPause();
+            base.OnStop();
         }
     }
 }

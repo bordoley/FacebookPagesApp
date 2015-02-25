@@ -70,7 +70,7 @@ module ApplicationController =
                 |> Observable.filter (fun (currentPage, _) -> Option.isSome currentPage)
                 |> Observable.map (fun (currentPage, pages) -> (currentPage.Value, pages))
                 |> Observable.map (fun (currentPage, pages) ->  
-                    new NewPostModel(pages,  currentPage) :> IMobileModel)
+                    new NewPostModel(pages,  currentPage) :> INavigationModel)
                 |> Observable.subscribe (fun x -> vm.Open.Execute(x)),
 
             // First load of the data
@@ -212,9 +212,9 @@ module ApplicationController =
         sessionState 
         |> Observable.map (function
             // FIXME: Add factories that make this less painful
-            | LoggedIn -> PagesModel() :> IMobileModel
-            | LoggedOut -> LoginModel() :> IMobileModel) 
-        |> Observable.startWith ([UnknownStateModel() :> IMobileModel])
+            | LoggedIn -> PagesModel() :> INavigationModel
+            | LoggedOut -> LoginModel() :> INavigationModel) 
+        |> Observable.startWith ([UnknownStateModel() :> INavigationModel])
 
     let bindController (sessionManager:ISessionManager) (httpClient:HttpClient<Stream, Stream>) = 
         let facebookClient = FacebookClient.create httpClient (fun () -> sessionManager.AccessToken)

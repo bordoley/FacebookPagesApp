@@ -10,7 +10,7 @@ using Unit = System.Reactive.Unit;
 
 namespace FacebookPagesApp
 {
-    public interface IPagesViewModel : IMobileViewModel
+    public interface IPagesViewModel : INavigationViewModel
     {
         IObservable<string> UserName { get; }
 
@@ -35,7 +35,7 @@ namespace FacebookPagesApp
         IRxCommand LoadMorePosts { get; }
     }
 
-    public interface IPagesControllerModel : IMobileControllerModel
+    public interface IPagesControllerModel : INavigationControllerModel
     {
         IRxProperty<string> UserName { get; }
 
@@ -62,7 +62,7 @@ namespace FacebookPagesApp
         IRxCommand RefreshPosts { get; }
     }
 
-    public sealed class PagesModel : MobileModel, IPagesViewModel, IPagesControllerModel
+    public sealed class PagesModel : NavigationModel, IPagesViewModel, IPagesControllerModel
     { 
         private readonly IRxProperty<FacebookAPI.PostFeed> _posts = 
             RxProperty.Create(FacebookAPI.PostFeedModule.Empty);

@@ -37,11 +37,9 @@ namespace FacebookPagesApp
             networkUnavailableMessage = this.FindViewById<TextView>(Resource.Id.network_unavailable_message);
         }
 
-        protected override void OnResume()
+        protected override void OnStart()
         {
-            base.OnResume();
-
-            LoginActivity._current = this;
+            base.OnStart();
 
             this.subscription = Disposable.Compose(
                 this.ViewModel.Login.Bind(this.authButton),
@@ -62,13 +60,23 @@ namespace FacebookPagesApp
             );
         }
 
+        protected override void OnResume()
+        {
+            base.OnResume();
+            LoginActivity._current = this;
+        }
+
         protected override void OnPause()
         {
-            subscription.Dispose();
-
             LoginActivity._current = null;
 
             base.OnPause();
+        }
+
+        protected override void OnStop()
+        {
+            subscription.Dispose();
+            base.OnStop();
         }
 
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)

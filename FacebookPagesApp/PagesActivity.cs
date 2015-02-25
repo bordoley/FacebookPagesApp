@@ -66,9 +66,9 @@ namespace FacebookPagesApp
             drawerLayout.SetDrawerShadow (Resource.Drawable.drawer_shadow_light, (int)GravityFlags.Start);
         }
 
-        protected override void OnResume()
+        protected override void OnStart()
         {
-            base.OnResume();
+            base.OnStart();
 
             subscription = Disposable.Compose( 
                 this.ViewModel.ShowRefresher.BindTo(refresher, x => x.Refreshing), 
@@ -162,10 +162,10 @@ namespace FacebookPagesApp
             return base.OnCreateOptionsMenu(menu);
         }
 
-        protected override void OnPause()
+        protected override void OnStop()
         {
             subscription.Dispose();
-            base.OnPause();
+            base.OnStop();
         }
 
         public void OnScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount)

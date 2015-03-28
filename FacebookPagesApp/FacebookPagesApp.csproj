@@ -179,6 +179,14 @@
       <Project>{AF097090-D42D-42E7-91AD-907A6EEA1336}</Project>
       <Name>FunctionalHttp-Android</Name>
     </ProjectReference>
+    <ProjectReference Include="..\RxApp\RxApp.Android.Support.V4\RxApp.Android.Support.V4.csproj">
+      <Project>{BBEE95A4-6F63-4B9A-A3BD-99EF3901EB95}</Project>
+      <Name>RxApp.Android.Support.V4</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RxApp\RxApp.Android.Support.V7.AppCompat\RxApp.Android.Support.V7.AppCompat.csproj">
+      <Project>{5C9F268C-C30D-491A-9B4C-8D46934AA416}</Project>
+      <Name>RxApp.Android.Support.V7.AppCompat</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\layout\" />

@@ -21,8 +21,7 @@ namespace FacebookPagesApp
         private const string XAMARIN_INSIGHTS_KEY = 
             "483137a8b42bc65cd39f3b649599093a6e09ce46";
 
-        private Func<object,IDisposable> bindController;
-        private IObservable<INavigationModel> rootState;
+        private INavigationController controller;
        
         public FacebookPagesApplication(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
@@ -32,14 +31,9 @@ namespace FacebookPagesApp
             this.RegisterActivity<INewPostViewModel,NewPostActivity>();
         }
 
-        protected override IObservable<INavigationModel> RootState()
-        { 
-            return rootState;
-        }
-
-        protected override IDisposable BindController(INavigationControllerModel model)
+        protected override INavigationController GetNavigationController()
         {
-            return bindController(model);
+            return controller;
         }
 
         public override void OnCreate()
@@ -57,12 +51,9 @@ namespace FacebookPagesApp
             }*/
 
             var httpClient = FunctionalHttp.Client.HttpClient.FromNetHttpClient(new HttpClient(new NativeMessageHandler()));
-
-            this.rootState = 
-                ApplicationController.rootState(FacebookSession.observe(this.ApplicationContext));
-
-            this.bindController = 
-                ApplicationController.bindController(
+            this.controller = 
+                ApplicationController.createController(
+                    FacebookSession.observe(this.ApplicationContext),
                     FacebookSession.getManagerWithFunc(() => LoginActivity.Current),
                     httpClient);
         }

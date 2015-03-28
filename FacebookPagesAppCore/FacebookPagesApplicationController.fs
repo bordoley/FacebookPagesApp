@@ -208,22 +208,20 @@ module ApplicationController =
         // Check the result, if exception pop up error and set canpublish true otherwise pop the viewmodel
         |> Observable.subscribe (fun _ -> vm.Back.Execute())
 
-    let rootState (sessionState:IObservable<LoginState>) = 
-        sessionState 
-        |> Observable.map (function
-            // FIXME: Add factories that make this less painful
-            | LoggedIn -> PagesModel() :> INavigationModel
-            | LoggedOut -> LoginModel() :> INavigationModel) 
-        |> Observable.startWith ([UnknownStateModel() :> INavigationModel])
-
-    let bindController (sessionManager:ISessionManager) (httpClient:HttpClient<Stream, Stream>) = 
+    let createController (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream, Stream>) = 
         let facebookClient = FacebookClient.create httpClient (fun () -> sessionManager.AccessToken)
 
-        let bind (model:obj) =
-            match model with 
-            | :? ILoginControllerModel as vm -> loginController vm sessionManager
-            | :? IUnknownStateControllerModel as vm -> Disposable.Empty
-            | :? IPagesControllerModel as vm -> pagesController vm sessionManager facebookClient
-            | :? INewPostControllerModel as vm -> newPostController vm facebookClient
-            | _ -> failwith ("Unknown controller model type: " + model.ToString())
-        System.Func<obj, IDisposable>(bind)
+        let builder = RxApp.NavigationControllerBuilder();
+        builder.RootState <-
+            sessionState 
+            |> Observable.map (function
+                // FIXME: Add factories that make this less painful
+                | LoggedIn -> PagesModel() :> INavigationModel
+                | LoggedOut -> LoginModel() :> INavigationModel) 
+            |> Observable.startWith ([UnknownStateModel() :> INavigationModel])
+
+        builder.RegisterControllerProvider<ILoginControllerModel> (fun vm -> loginController vm sessionManager)
+        builder.RegisterControllerProvider<IUnknownStateControllerModel> (fun vm -> Disposable.Empty)
+        builder.RegisterControllerProvider<IPagesControllerModel> (fun vm -> pagesController vm sessionManager facebookClient)
+        builder.RegisterControllerProvider<INewPostControllerModel> (fun vm -> newPostController vm facebookClient)
+        builder.Build()

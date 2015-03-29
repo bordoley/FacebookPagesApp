@@ -12,6 +12,7 @@ using ModernHttpClient;
 using Microsoft.FSharp.Core;
 
 using Xamarin;
+using System.Reactive.Subjects;
 
 namespace FacebookPagesApp
 {
@@ -21,7 +22,7 @@ namespace FacebookPagesApp
         private const string XAMARIN_INSIGHTS_KEY = 
             "483137a8b42bc65cd39f3b649599093a6e09ce46";
 
-        private INavigationController controller;
+        private readonly IConnectableObservable<IEnumerable<INavigationModel>> application;
        
         public FacebookPagesApplication(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
@@ -29,12 +30,16 @@ namespace FacebookPagesApp
             this.RegisterActivity<IUnknownStateViewModel,UnknownStateActivity>();
             this.RegisterActivity<IPagesViewModel,PagesActivity>();
             this.RegisterActivity<INewPostViewModel,NewPostActivity>();
+
+            var httpClient = FunctionalHttp.Client.HttpClient.FromNetHttpClient(new HttpClient(new NativeMessageHandler()));
+            this.application = 
+                ApplicationController.createController(
+                    FacebookSession.observeWithFunc(() => this.ApplicationContext),
+                    FacebookSession.getManagerWithFunc(() => LoginActivity.Current),
+                    httpClient);
         }
 
-        protected override INavigationController GetNavigationController()
-        {
-            return controller;
-        }
+        protected override IConnectableObservable<IEnumerable<INavigationModel>> NavigationApplicaction { get { return application; } }
 
         public override void OnCreate()
         {
@@ -49,13 +54,6 @@ namespace FacebookPagesApp
                 var key = System.Text.Encoding.UTF8.GetString(Android.Util.Base64.Encode(md.Digest(), 0));
                 Android.Util.Log.Error("Key Hash=", key);
             }*/
-
-            var httpClient = FunctionalHttp.Client.HttpClient.FromNetHttpClient(new HttpClient(new NativeMessageHandler()));
-            this.controller = 
-                ApplicationController.createController(
-                    FacebookSession.observe(this.ApplicationContext),
-                    FacebookSession.getManagerWithFunc(() => LoginActivity.Current),
-                    httpClient);
         }
     }
 }

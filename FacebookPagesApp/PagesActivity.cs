@@ -19,6 +19,7 @@ using System.Reactive.Subjects;
 
 using Microsoft.FSharp.Core;
 
+
 using Observable = System.Reactive.Linq.Observable;
 using CardView = Android.Support.V7.Widget.CardView;
 
@@ -105,16 +106,16 @@ namespace FacebookPagesApp
                     .Select(x => x.Value.name)
                     .BindTo(this, x=> x.Title),
 
-                Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick")
-                      .Select(x => x.EventArgs.Position)
-                      .CombineLatest(this.ViewModel.Pages)
-                      .Select(t => FSharpOption<FacebookAPI.Page>.Some(t.Item2[t.Item1]))
+                RxApp.Observable.CombineLatest(
+                        Observable.FromEventPattern<AdapterView.ItemClickEventArgs>(userpages, "ItemClick").Select(x => x.EventArgs.Position),
+                        this.ViewModel.Pages)
+                    .Select(t => FSharpOption<FacebookAPI.Page>.Some(t.Item2[t.Item1]))
 
-                      // FIXME: Closing the drawer imperitively in the view bindings here
-                      // means that the experience is not testable.
-                      .ObserveOnMainThread()
-                      .Do(_ => this.drawerLayout.CloseDrawers())
-                      .BindTo(this.ViewModel.CurrentPage), 
+                    // FIXME: Closing the drawer imperitively in the view bindings here
+                    // means that the experience is not testable.
+                    .ObserveOnMainThread()
+                    .Do(_ => this.drawerLayout.CloseDrawers())
+                    .BindTo(this.ViewModel.CurrentPage), 
 
                 // FIXME: need
                 RxApp.Observable.CombineLatest(this.onScroll, this.onScrollState)

@@ -132,7 +132,7 @@ module FacebookSession =
 
         Observable.create onSubscribe
 
-    let observe (context:Context) : IObservable<LoginState> =
+    let observe (context:unit->Context) : IObservable<LoginState> =
         let onSubscribe(observer:IObserver<LoginState>) =
             let publishState (session:Session) =
                 let state = if session.IsOpened then LoggedIn else LoggedOut
@@ -141,7 +141,7 @@ module FacebookSession =
             let sessionStatusChangedCallback = new SessionStatusChangedCallback(publishState) :> Session.IStatusCallback
 
             let currentSessionSubscription = 
-                (currentSession context) 
+                (currentSession <| context ()) 
                 |> Observable.scanInit (None, None) (fun (_,prev) current -> (prev, current))
                 |> Observable.subscribe (fun (prev, current) -> 
                     match (prev, current) with
@@ -165,6 +165,9 @@ module FacebookSession =
             dispose
 
         Observable.create onSubscribe |> Observable.distinctUntilChanged
+
+    let observeWithFunc (context:Func<Context>) : IObservable<LoginState> =
+        observe (fun () -> context.Invoke())
 
     let getManager (activityProvider:unit->Activity) =
         new FacebookSessionManager(activityProvider) :> ISessionManager

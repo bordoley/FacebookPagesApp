@@ -125,6 +125,7 @@ namespace FacebookPagesApp
     public sealed class NewPostActivity : RxActivity<INewPostViewModel>
     {
         private IDisposable subscription = null;
+        private IDisposable menuSubscription = null;
 
         private Switch shouldPublishPost;
         private Button showDatePicker;
@@ -186,18 +187,21 @@ namespace FacebookPagesApp
                 Observable.FromEventPattern(this.postContent, "AfterTextChanged")
                           .Throttle(TimeSpan.FromSeconds(.5))
                           .Select(x => postContent.Text)
-                          .BindTo(this.ViewModel.PostContent),
-
-                this.OptionsItemSelected
-                    .Where(item => item.ItemId == Resource.Id.new_post_action_bar_post)
-                    .InvokeCommand(this.ViewModel.PublishPost)
+                          .BindTo(this.ViewModel.PostContent)
             );
         }
 
         public override bool OnCreateOptionsMenu (IMenu menu)
         {
-            MenuInflater.Inflate (Resource.Menu.NewPostActionBarMenu, menu);       
+            MenuInflater.Inflate (Resource.Menu.NewPostActionBarMenu, menu);   
+            menuSubscription = this.ViewModel.PublishPost.Bind(menu.FindItem(Resource.Id.new_post_action_bar_post));    
             return base.OnCreateOptionsMenu(menu);
+        }
+
+        protected override void OnDestroy()
+        {
+            menuSubscription.Dispose();
+            base.OnDestroy();
         }
             
         protected override void OnStop()

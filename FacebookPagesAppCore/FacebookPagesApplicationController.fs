@@ -220,8 +220,8 @@ module ApplicationController =
                 | LoggedOut -> LoginModel() :> INavigationModel) 
             |> Observable.startWith ([UnknownStateModel() :> INavigationModel])
 
-        builder.RegisterControllerProvider<ILoginControllerModel> (fun vm -> loginController vm sessionManager)
-        builder.RegisterControllerProvider<IUnknownStateControllerModel> (fun vm -> Disposable.Empty)
-        builder.RegisterControllerProvider<IPagesControllerModel> (fun vm -> pagesController vm sessionManager facebookClient)
-        builder.RegisterControllerProvider<INewPostControllerModel> (fun vm -> newPostController vm facebookClient)
+        builder.RegisterBinding<ILoginControllerModel> (fun vm -> loginController vm sessionManager)
+        builder.RegisterBinding<IUnknownStateControllerModel> (fun vm -> Disposable.Empty)
+        builder.RegisterBinding<IPagesControllerModel> (fun vm -> pagesController vm sessionManager facebookClient)
+        builder.RegisterBinding<INewPostControllerModel> (fun vm -> newPostController vm facebookClient)
         builder.Build()

@@ -34,6 +34,7 @@ namespace FacebookPagesApp
         private readonly Subject<ScrollState> onScrollState = new Subject<ScrollState>();
 
         private IDisposable subscription = null;
+        private IDisposable menuSubscription = null;
 
         private DrawerLayout drawerLayout;
         private SwipeRefreshLayout refresher;
@@ -70,7 +71,6 @@ namespace FacebookPagesApp
         protected override void OnStart()
         {
             base.OnStart();
-
             subscription = Disposable.Compose( 
                 this.ViewModel.ShowRefresher.BindTo(refresher, x => x.Refreshing), 
                 this.ViewModel.RefreshPosts.Bind(refresher), 
@@ -149,18 +149,25 @@ namespace FacebookPagesApp
                             { 
                                 var textView = view.FindViewById<TextView>(Resource.Id.post_card_text);
                                 textView.Text = viewModel.message;
-                            }),
+                            })
 
-                this.OptionsItemSelected
-                    .Where(item => item.ItemId == Resource.Id.pages_action_bar_new_post)
-                    .InvokeCommand(this.ViewModel.CreatePost)
+                //this.OptionsItemSelected
+                 //   .Where(item => item.ItemId == Resource.Id.pages_action_bar_new_post)
+                  //  .InvokeCommand(this.ViewModel.CreatePost)
             );
         }
 
         public override bool OnCreateOptionsMenu (IMenu menu)
         {
-            MenuInflater.Inflate (Resource.Menu.PagesActionBarMenu, menu);       
+            MenuInflater.Inflate (Resource.Menu.PagesActionBarMenu, menu);  
+            menuSubscription = this.ViewModel.CreatePost.Bind(menu.FindItem(Resource.Id.pages_action_bar_new_post));  
             return base.OnCreateOptionsMenu(menu);
+        }
+
+        protected override void OnDestroy()
+        {
+            menuSubscription.Dispose();
+            base.OnDestroy();
         }
 
         protected override void OnStop()

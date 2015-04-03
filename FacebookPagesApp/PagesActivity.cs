@@ -159,8 +159,11 @@ namespace FacebookPagesApp
 
         public override bool OnCreateOptionsMenu (IMenu menu)
         {
-            MenuInflater.Inflate (Resource.Menu.PagesActionBarMenu, menu);  
-            menuSubscription = this.ViewModel.CreatePost.Bind(menu.FindItem(Resource.Id.pages_action_bar_new_post));  
+            MenuInflater.Inflate (Resource.Menu.PagesActionBarMenu, menu); 
+            var testProp = RxProperty.Create(false);
+            menuSubscription = Disposable.Compose(
+                this.ViewModel.CreatePost.Bind(menu.FindItem(Resource.Id.pages_action_bar_new_post)),
+                testProp.Bind(menu.FindItem(Resource.Id.pages_action_bar_toggle)));
             return base.OnCreateOptionsMenu(menu);
         }
 

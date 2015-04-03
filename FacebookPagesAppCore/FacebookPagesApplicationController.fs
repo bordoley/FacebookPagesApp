@@ -219,6 +219,7 @@ module ApplicationController =
                 | LoggedIn -> PagesModel() :> INavigationModel
                 | LoggedOut -> LoginModel() :> INavigationModel) 
             |> Observable.startWith ([UnknownStateModel() :> INavigationModel])
+            |> Observable.map (fun x -> NavigationStack.Empty.Push(x))
 
         builder.RegisterBinding<ILoginControllerModel> (fun vm -> loginController vm sessionManager)
         builder.RegisterBinding<IUnknownStateControllerModel> (fun vm -> Disposable.Empty)

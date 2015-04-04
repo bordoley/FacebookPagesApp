@@ -22,7 +22,7 @@ namespace FacebookPagesApp
         private const string XAMARIN_INSIGHTS_KEY = 
             "483137a8b42bc65cd39f3b649599093a6e09ce46";
 
-        private readonly IConnectableObservable<NavigationStack> application;
+        private readonly IObservable<NavigationStack> application;
        
         public FacebookPagesApplication(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
@@ -39,7 +39,7 @@ namespace FacebookPagesApp
                     httpClient);
         }
 
-        protected override IConnectableObservable<NavigationStack> NavigationApplicaction { get { return application; } }
+        protected override IObservable<NavigationStack> NavigationApplicaction { get { return application; } }
 
         public override void OnCreate()
         {

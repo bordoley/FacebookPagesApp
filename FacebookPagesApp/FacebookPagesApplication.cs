@@ -22,29 +22,32 @@ namespace FacebookPagesApp
         private const string XAMARIN_INSIGHTS_KEY = 
             "483137a8b42bc65cd39f3b649599093a6e09ce46";
 
-        private readonly IObservable<NavigationStack> application;
-       
+        private IDisposable subscription;
+
         public FacebookPagesApplication(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
-            this.RegisterActivity<ILoginViewModel,LoginActivity>();
-            this.RegisterActivity<IUnknownStateViewModel,UnknownStateActivity>();
-            this.RegisterActivity<IPagesViewModel,PagesActivity>();
-            this.RegisterActivity<INewPostViewModel,NewPostActivity>();
-
-            var httpClient = FunctionalHttp.Client.HttpClient.FromNetHttpClient(new HttpClient(new NativeMessageHandler()));
-            this.application = 
-                ApplicationController.createController(
-                    FacebookSession.observeWithFunc(() => this.ApplicationContext),
-                    FacebookSession.getManagerWithFunc(() => LoginActivity.Current),
-                    httpClient);
         }
-
-        protected override IObservable<NavigationStack> NavigationApplicaction { get { return application; } }
 
         public override void OnCreate()
         {
             base.OnCreate();
             Insights.Initialize(XAMARIN_INSIGHTS_KEY, this.ApplicationContext);
+
+            var builder = new RxAndroidApplicationBuilder();
+            builder.RegisterActivityMapping<ILoginViewModel,LoginActivity>();
+            builder.RegisterActivityMapping<IUnknownStateViewModel,UnknownStateActivity>();
+            builder.RegisterActivityMapping<IPagesViewModel,PagesActivity>();
+            builder.RegisterActivityMapping<INewPostViewModel,NewPostActivity>();
+
+            var httpClient = FunctionalHttp.Client.HttpClient.FromNetHttpClient(new HttpClient(new NativeMessageHandler()));
+            builder.NavigationApplicaction = 
+                ApplicationController.createController(
+                    FacebookSession.observeWithFunc(() => this.ApplicationContext),
+                    FacebookSession.getManagerWithFunc(() => LoginActivity.Current),
+                    httpClient);
+
+            builder.CreatedActivities = this.CreatedActivities;
+            this.subscription = builder.Build().Subscribe();
 
             /* Code for getting the key hash for facebook
             foreach (var sig in this.PackageManager.GetPackageInfo(this.PackageName, Android.Content.PM.PackageInfoFlags.Signatures).Signatures)
@@ -54,6 +57,12 @@ namespace FacebookPagesApp
                 var key = System.Text.Encoding.UTF8.GetString(Android.Util.Base64.Encode(md.Digest(), 0));
                 Android.Util.Log.Error("Key Hash=", key);
             }*/
+        }
+
+        public override void OnTerminate()
+        {
+            subscription.Dispose();
+            base.OnTerminate();
         }
     }
 }

@@ -33,21 +33,21 @@ namespace FacebookPagesApp
             base.OnCreate();
             Insights.Initialize(XAMARIN_INSIGHTS_KEY, this.ApplicationContext);
 
-            var builder = new RxAndroidApplicationBuilder();
-            builder.RegisterActivityMapping<ILoginViewModel,LoginActivity>();
-            builder.RegisterActivityMapping<IUnknownStateViewModel,UnknownStateActivity>();
-            builder.RegisterActivityMapping<IPagesViewModel,PagesActivity>();
-            builder.RegisterActivityMapping<INewPostViewModel,NewPostActivity>();
+            var activityCreatorBuilder = new ActivityCreatorBuilder();
+            activityCreatorBuilder.RegisterActivityMapping<ILoginViewModel,LoginActivity>();
+            activityCreatorBuilder.RegisterActivityMapping<IUnknownStateViewModel,UnknownStateActivity>();
+            activityCreatorBuilder.RegisterActivityMapping<IPagesViewModel,PagesActivity>();
+            activityCreatorBuilder.RegisterActivityMapping<INewPostViewModel,NewPostActivity>();
 
             var httpClient = FunctionalHttp.Client.HttpClient.FromNetHttpClient(new HttpClient(new NativeMessageHandler()));
-            builder.NavigationApplicaction = 
+
+            var navigationStack = 
                 ApplicationController.createController(
                     FacebookSession.observeWithFunc(() => this.ApplicationContext),
                     FacebookSession.getManagerWithFunc(() => LoginActivity.Current),
                     httpClient);
 
-            builder.CreatedActivities = this.CreatedActivities;
-            this.subscription = builder.Build().Subscribe();
+            this.subscription = navigationStack.BindTo(this, activityCreatorBuilder.Build());
 
             /* Code for getting the key hash for facebook
             foreach (var sig in this.PackageManager.GetPackageInfo(this.PackageName, Android.Content.PM.PackageInfoFlags.Signatures).Signatures)

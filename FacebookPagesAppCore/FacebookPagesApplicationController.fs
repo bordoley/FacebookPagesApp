@@ -211,8 +211,8 @@ module ApplicationController =
     let createController (sessionState:IObservable<LoginState>) (sessionManager:ISessionManager) (httpClient:HttpClient<Stream, Stream>) = 
         let facebookClient = FacebookClient.create httpClient (fun () -> sessionManager.AccessToken)
 
-        let builder = RxApp.NavigationApplicationBuilder();
-        builder.RootState <-
+        let builder = RxApp.NavigableBuilder()
+        builder.InitialState <-
             sessionState 
             |> Observable.map (function
                 // FIXME: Add factories that make this less painful

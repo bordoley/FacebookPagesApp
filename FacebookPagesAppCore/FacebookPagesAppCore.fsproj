@@ -66,16 +66,18 @@
     <Reference Include="Sparse">
       <HintPath>..\packages\Sparse.0.0.3\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Sparse.dll</HintPath>
     </Reference>
+    <Reference Include="System.Collections.Immutable">
+      <HintPath>..\packages\System.Collections.Immutable.1.1.34-rc\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="RxApp">
+      <HintPath>..\packages\RxApp.0.0.1-pre3\lib\portable-net45+netcore45+wpa81+wp8\RxApp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.FSharp.targets" />
   <ItemGroup>
     <Compile Include="FacebookPagesApplicationController.fs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RxApp\RxApp\RxApp.csproj">
-      <Project>{CC5733DE-CD02-451A-8371-2F6067A5CE07}</Project>
-      <Name>RxApp</Name>
-    </ProjectReference>
     <ProjectReference Include="..\FacebookPagesAppModels\FacebookPagesAppModels.csproj">
       <Project>{0794E6A8-713D-4771-BCF2-101C7A381345}</Project>
       <Name>FacebookPagesAppModels</Name>
